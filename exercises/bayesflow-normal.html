@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Simulator – Seminar in Amortized Bayesian Inference</title>
+<title>Estimating parameters of a normal distribution – Seminar in Amortized Bayesian Inference</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -101,9 +101,39 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 <link rel="stylesheet" href="../styles.css">
-<meta property="og:title" content="Simulator – Seminar in Amortized Bayesian Inference">
+<meta property="og:title" content="Estimating parameters of a normal distribution – Seminar in Amortized Bayesian Inference">
+<meta property="og:description" content="Materials for learning working with BayesFlow">
 <meta property="og:site_name" content="Seminar in Amortized Bayesian Inference">
 </head>
 
@@ -172,25 +202,32 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#prior-predictives" id="toc-prior-predictives" class="nav-link active" data-scroll-target="#prior-predictives">Prior predictives</a></li>
+  <li><a href="#simple-example" id="toc-simple-example" class="nav-link active" data-scroll-target="#simple-example">Simple example</a>
+  <ul class="collapse">
+  <li><a href="#simulator" id="toc-simulator" class="nav-link" data-scroll-target="#simulator">Simulator</a>
+  <ul class="collapse">
+  <li><a href="#prior-predictives" id="toc-prior-predictives" class="nav-link" data-scroll-target="#prior-predictives">Prior predictives</a></li>
+  </ul></li>
   <li><a href="#approximator" id="toc-approximator" class="nav-link" data-scroll-target="#approximator">Approximator</a></li>
   <li><a href="#validation" id="toc-validation" class="nav-link" data-scroll-target="#validation">Validation</a></li>
   <li><a href="#inference" id="toc-inference" class="nav-link" data-scroll-target="#inference">Inference</a></li>
-  <li><a href="#using-summary-network" id="toc-using-summary-network" class="nav-link" data-scroll-target="#using-summary-network">Using summary network</a>
+  </ul></li>
+  <li><a href="#using-a-summary-network" id="toc-using-a-summary-network" class="nav-link" data-scroll-target="#using-a-summary-network">Using a summary network</a>
   <ul class="collapse">
   <li><a href="#approximator-1" id="toc-approximator-1" class="nav-link" data-scroll-target="#approximator-1">Approximator</a></li>
   <li><a href="#validation-1" id="toc-validation-1" class="nav-link" data-scroll-target="#validation-1">Validation</a></li>
   <li><a href="#inference-1" id="toc-inference-1" class="nav-link" data-scroll-target="#inference-1">Inference</a></li>
   </ul></li>
+  <li><a href="#further-exercises" id="toc-further-exercises" class="nav-link" data-scroll-target="#further-exercises">Further exercises</a></li>
   </ul>
-<div class="toc-actions"><ul><li><a href="https://github.dev/Kucharssim/bayesflow-seminar/blob/main/exercises/bayesflow-normal.ipynb" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Kucharssim/bayesflow-seminar/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+<div class="toc-actions"><ul><li><a href="https://github.dev/Kucharssim/bayesflow-seminar/blob/main/exercises/bayesflow-normal.ipynb" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Kucharssim/bayesflow-seminar/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div><div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="bayesflow-normal.out.ipynb" download="bayesflow-normal.out.ipynb"><i class="bi bi-journal-code"></i>Jupyter</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Simulator</h1>
+<h1 class="title">Estimating parameters of a normal distribution</h1>
 </div>
 
 
@@ -215,6 +252,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<section id="simple-example" class="level1">
+<h1>Simple example</h1>
+<section id="simulator" class="level2">
+<h2 class="anchored" data-anchor-id="simulator">Simulator</h2>
 <div id="cell-3" class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> context(batch_size, n<span class="op">=</span><span class="va">None</span>):</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> n <span class="kw">is</span> <span class="va">None</span>:</span>
@@ -260,6 +301,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </section>
+</section>
 <section id="approximator" class="level2">
 <h2 class="anchored" data-anchor-id="approximator">Approximator</h2>
 <div id="cell-9" class="cell" data-execution_count="6">
@@ -274,20 +316,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="cell-10" class="cell" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>adapter(data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="7">
-<pre><code>{'inference_conditions': array([[74.        ,  0.76694314,  1.39422227],
-        [74.        , -0.6229432 ,  3.08988216],
-        [74.        ,  0.44475618,  2.75734839],
+<pre><code>{'inference_conditions': array([[73.        , -0.3101565 ,  1.85986046],
+        [73.        , -0.3378794 ,  4.43681815],
+        [73.        ,  0.66380707,  3.48889386],
         ...,
-        [74.        ,  0.17871722,  1.68871381],
-        [74.        ,  0.42637994,  1.1742368 ],
-        [74.        , -0.22511094,  1.84774964]]),
- 'inference_variables': array([[ 0.84486274,  1.37260244],
-        [-0.34209391,  3.25960583],
-        [ 0.22161927,  2.77719178],
+        [73.        ,  1.00937811,  0.40078604],
+        [73.        ,  0.63226432,  0.55506636],
+        [73.        , -1.84457355,  0.95182243]]),
+ 'inference_variables': array([[-0.25619292,  2.00083979],
+        [ 0.0145662 ,  4.08056985],
+        [ 0.36442674,  3.1198835 ],
         ...,
-        [-0.25682988,  1.46655423],
-        [ 0.48404955,  0.72521255],
-        [-0.21675392,  1.62647277]])}</code></pre>
+        [ 0.91677106, -0.7230314 ],
+        [ 0.68635459, -0.42010279],
+        [-1.86425704,  0.65961324]])}</code></pre>
 </div>
 </div>
 <div id="cell-11" class="cell" data-execution_count="8">
@@ -321,25 +363,25 @@ INFO:bayesflow:Building on a test batch.</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Epoch 1/10
-100/100 ━━━━━━━━━━━━━━━━━━━━ 8s 14ms/step - loss: 3.4837 - loss/inference_loss: 3.4837
+100/100 ━━━━━━━━━━━━━━━━━━━━ 6s 13ms/step - loss: 3.1127 - loss/inference_loss: 3.1127
 Epoch 2/10
-100/100 ━━━━━━━━━━━━━━━━━━━━ 2s 18ms/step - loss: 2.0692 - loss/inference_loss: 2.0692
+100/100 ━━━━━━━━━━━━━━━━━━━━ 2s 18ms/step - loss: 2.1562 - loss/inference_loss: 2.1562
 Epoch 3/10
-100/100 ━━━━━━━━━━━━━━━━━━━━ 2s 17ms/step - loss: 1.5248 - loss/inference_loss: 1.5248
+100/100 ━━━━━━━━━━━━━━━━━━━━ 2s 18ms/step - loss: 1.6789 - loss/inference_loss: 1.6789
 Epoch 4/10
-100/100 ━━━━━━━━━━━━━━━━━━━━ 2s 17ms/step - loss: 1.6958 - loss/inference_loss: 1.6958
+100/100 ━━━━━━━━━━━━━━━━━━━━ 2s 18ms/step - loss: 0.9218 - loss/inference_loss: 0.9218
 Epoch 5/10
-100/100 ━━━━━━━━━━━━━━━━━━━━ 2s 19ms/step - loss: 0.8813 - loss/inference_loss: 0.8813
+100/100 ━━━━━━━━━━━━━━━━━━━━ 2s 18ms/step - loss: 1.0360 - loss/inference_loss: 1.0360
 Epoch 6/10
-100/100 ━━━━━━━━━━━━━━━━━━━━ 2s 18ms/step - loss: 0.4748 - loss/inference_loss: 0.4748
+100/100 ━━━━━━━━━━━━━━━━━━━━ 2s 19ms/step - loss: 0.4432 - loss/inference_loss: 0.4432
 Epoch 7/10
-100/100 ━━━━━━━━━━━━━━━━━━━━ 2s 18ms/step - loss: 0.4894 - loss/inference_loss: 0.4894
+100/100 ━━━━━━━━━━━━━━━━━━━━ 2s 17ms/step - loss: 0.3578 - loss/inference_loss: 0.3578
 Epoch 8/10
-100/100 ━━━━━━━━━━━━━━━━━━━━ 2s 18ms/step - loss: 0.0512 - loss/inference_loss: 0.0512
+100/100 ━━━━━━━━━━━━━━━━━━━━ 2s 17ms/step - loss: 0.3496 - loss/inference_loss: 0.3496
 Epoch 9/10
-100/100 ━━━━━━━━━━━━━━━━━━━━ 2s 17ms/step - loss: 0.1660 - loss/inference_loss: 0.1660
+100/100 ━━━━━━━━━━━━━━━━━━━━ 2s 17ms/step - loss: 0.1186 - loss/inference_loss: 0.1186
 Epoch 10/10
-100/100 ━━━━━━━━━━━━━━━━━━━━ 2s 18ms/step - loss: 0.0928 - loss/inference_loss: 0.0928</code></pre>
+100/100 ━━━━━━━━━━━━━━━━━━━━ 2s 17ms/step - loss: 0.0109 - loss/inference_loss: 0.0109</code></pre>
 </div>
 </div>
 <div id="cell-16" class="cell" data-execution_count="13">
@@ -410,8 +452,9 @@ Epoch 10/10
 </div>
 </div>
 </section>
-<section id="using-summary-network" class="level1">
-<h1>Using summary network</h1>
+</section>
+<section id="using-a-summary-network" class="level1">
+<h1>Using a summary network</h1>
 <section id="approximator-1" class="level2">
 <h2 class="anchored" data-anchor-id="approximator-1">Approximator</h2>
 <div id="cell-27" class="cell" data-execution_count="21">
@@ -451,25 +494,25 @@ INFO:bayesflow:Building on a test batch.</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Epoch 1/10
-100/100 ━━━━━━━━━━━━━━━━━━━━ 13s 36ms/step - loss: 3.2360 - loss/inference_loss: 2.8069 - loss/summary_loss: 0.4291
+100/100 ━━━━━━━━━━━━━━━━━━━━ 12s 37ms/step - loss: 3.3305 - loss/inference_loss: 2.8199 - loss/summary_loss: 0.5106
 Epoch 2/10
-100/100 ━━━━━━━━━━━━━━━━━━━━ 5s 54ms/step - loss: 1.7409 - loss/inference_loss: 1.4738 - loss/summary_loss: 0.2671
+100/100 ━━━━━━━━━━━━━━━━━━━━ 5s 50ms/step - loss: 1.7787 - loss/inference_loss: 1.4463 - loss/summary_loss: 0.3324
 Epoch 3/10
-100/100 ━━━━━━━━━━━━━━━━━━━━ 5s 54ms/step - loss: 1.1521 - loss/inference_loss: 0.9118 - loss/summary_loss: 0.2404
+100/100 ━━━━━━━━━━━━━━━━━━━━ 5s 51ms/step - loss: 1.2010 - loss/inference_loss: 0.9137 - loss/summary_loss: 0.2873
 Epoch 4/10
-100/100 ━━━━━━━━━━━━━━━━━━━━ 6s 59ms/step - loss: 0.7384 - loss/inference_loss: 0.5291 - loss/summary_loss: 0.2093
+100/100 ━━━━━━━━━━━━━━━━━━━━ 5s 54ms/step - loss: 0.8284 - loss/inference_loss: 0.5727 - loss/summary_loss: 0.2557
 Epoch 5/10
-100/100 ━━━━━━━━━━━━━━━━━━━━ 6s 64ms/step - loss: 0.5829 - loss/inference_loss: 0.3884 - loss/summary_loss: 0.1945
+100/100 ━━━━━━━━━━━━━━━━━━━━ 6s 57ms/step - loss: 0.5715 - loss/inference_loss: 0.3398 - loss/summary_loss: 0.2317
 Epoch 6/10
-100/100 ━━━━━━━━━━━━━━━━━━━━ 6s 59ms/step - loss: 0.4831 - loss/inference_loss: 0.2973 - loss/summary_loss: 0.1858
+100/100 ━━━━━━━━━━━━━━━━━━━━ 6s 55ms/step - loss: 0.4893 - loss/inference_loss: 0.2788 - loss/summary_loss: 0.2105
 Epoch 7/10
-100/100 ━━━━━━━━━━━━━━━━━━━━ 6s 59ms/step - loss: 0.4428 - loss/inference_loss: 0.2589 - loss/summary_loss: 0.1839
+100/100 ━━━━━━━━━━━━━━━━━━━━ 6s 55ms/step - loss: 0.4544 - loss/inference_loss: 0.2548 - loss/summary_loss: 0.1996
 Epoch 8/10
-100/100 ━━━━━━━━━━━━━━━━━━━━ 6s 57ms/step - loss: 0.2853 - loss/inference_loss: 0.1048 - loss/summary_loss: 0.1806
+100/100 ━━━━━━━━━━━━━━━━━━━━ 6s 58ms/step - loss: 0.3392 - loss/inference_loss: 0.1429 - loss/summary_loss: 0.1962
 Epoch 9/10
-100/100 ━━━━━━━━━━━━━━━━━━━━ 6s 56ms/step - loss: 0.3235 - loss/inference_loss: 0.1441 - loss/summary_loss: 0.1793
+100/100 ━━━━━━━━━━━━━━━━━━━━ 6s 59ms/step - loss: 0.3685 - loss/inference_loss: 0.1744 - loss/summary_loss: 0.1941
 Epoch 10/10
-100/100 ━━━━━━━━━━━━━━━━━━━━ 6s 61ms/step - loss: 0.3194 - loss/inference_loss: 0.1401 - loss/summary_loss: 0.1793</code></pre>
+100/100 ━━━━━━━━━━━━━━━━━━━━ 6s 60ms/step - loss: 0.3299 - loss/inference_loss: 0.1355 - loss/summary_loss: 0.1945</code></pre>
 </div>
 </div>
 </section>
@@ -540,7 +583,7 @@ Epoch 10/10
 <div id="cell-39" class="cell" data-execution_count="31">
 <div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>summary(inference_data[<span class="st">"y"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="31">
-<pre><code>{'mean': 1.088498213383434, 'sd': 0.5756757855259478}</code></pre>
+<pre><code>{'mean': np.float64(1.0854894225709761), 'sd': np.float64(0.5950735427958067)}</code></pre>
 </div>
 </div>
 <div id="cell-40" class="cell" data-execution_count="32">
@@ -587,9 +630,20 @@ Epoch 10/10
 </div>
 </div>
 </div>
-
-
 </section>
+</section>
+<section id="further-exercises" class="level1">
+<h1>Further exercises</h1>
+<ol type="1">
+<li>Train a BayesFlow model that estimates the mean vector and a variance-covariance matrix of a 2D Gaussian.</li>
+<li>Train a BayesFlow model that estimates parameter of any other distribution. You are free to choose which (some examples: Gamma, Negative binomial, Weibull,…)</li>
+<li>The implementation of the normal model imposes one particular configuration of the priors on the parameters <code>"mu"</code> and <code>"sigma"</code>. This is relatively impractical, because not every time such priors would be reasonable. It is also relatively common to fit a model with different priors to investigate how robust are your inferences against prior specification. To do this, it is handy if you train a single BayesFlow model that can make inferences with different prior specifications. You can do this by varying the prior specification during simulations. For example,</li>
+</ol>
+<div class="sourceCode" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>hyper_mu_mu <span class="op">=</span> np.random.uniform(<span class="op">-</span><span class="dv">100</span>, <span class="dv">100</span>)</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>mu <span class="op">=</span> np.random.normal(hyper_mu_mu)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>would generate different priors for mu, depending on the value of the hyperparameter <span class="math inline">\(\mu_\mu\)</span>. If you condition the network on the values of the hyperparameters, you can train the networks to be able to use different priors during inference. Try to implement such a network.</p>
+
+
 </section>
 
 </main> <!-- /main -->

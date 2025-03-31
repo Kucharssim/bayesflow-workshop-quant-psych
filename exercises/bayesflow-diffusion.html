@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Simple response time (Wald model) – Seminar in Amortized Bayesian Inference</title>
+<title>Wald response times, Racing diffusion model – Seminar in Amortized Bayesian Inference</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -132,8 +132,7 @@ window.Quarto = {
 </script>
 
 <link rel="stylesheet" href="../styles.css">
-<meta property="og:title" content="Simple response time (Wald model) – Seminar in Amortized Bayesian Inference">
-<meta property="og:description" content="Materials for learning working with BayesFlow">
+<meta property="og:title" content="Wald response times, Racing diffusion model – Seminar in Amortized Bayesian Inference">
 <meta property="og:site_name" content="Seminar in Amortized Bayesian Inference">
 </head>
 
@@ -202,20 +201,27 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#two-choice-task-racing-diffusion-model" id="toc-two-choice-task-racing-diffusion-model" class="nav-link active" data-scroll-target="#two-choice-task-racing-diffusion-model">Two choice task (Racing diffusion model)</a>
+  <li><a href="#diffusion-models-in-bayesflow" id="toc-diffusion-models-in-bayesflow" class="nav-link active" data-scroll-target="#diffusion-models-in-bayesflow">Diffusion models in BayesFlow</a>
+  <ul class="collapse">
+  <li><a href="#simple-response-time-wald-model" id="toc-simple-response-time-wald-model" class="nav-link" data-scroll-target="#simple-response-time-wald-model">Simple response time (Wald model)</a></li>
+  <li><a href="#two-choice-task-racing-diffusion-model" id="toc-two-choice-task-racing-diffusion-model" class="nav-link" data-scroll-target="#two-choice-task-racing-diffusion-model">Two choice task (Racing diffusion model)</a>
   <ul class="collapse">
   <li><a href="#application-to-real-data" id="toc-application-to-real-data" class="nav-link" data-scroll-target="#application-to-real-data">Application to real data</a></li>
   </ul></li>
+  </ul></li>
+  <li><a href="#further-exercises" id="toc-further-exercises" class="nav-link" data-scroll-target="#further-exercises">Further exercises</a>
+  <ul class="collapse">
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul></li>
   </ul>
-<div class="toc-actions"><ul><li><a href="https://github.dev/Kucharssim/bayesflow-seminar/blob/main/exercises/bayesflow-diffusion.ipynb" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Kucharssim/bayesflow-seminar/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+<div class="toc-actions"><ul><li><a href="https://github.dev/Kucharssim/bayesflow-seminar/blob/main/exercises/bayesflow-diffusion.ipynb" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Kucharssim/bayesflow-seminar/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div><div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="bayesflow-diffusion.out.ipynb" download="bayesflow-diffusion.out.ipynb"><i class="bi bi-journal-code"></i>Jupyter</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Simple response time (Wald model)</h1>
+<h1 class="title">Wald response times, Racing diffusion model</h1>
 </div>
 
 
@@ -232,7 +238,9 @@ window.Quarto = {
 </header>
 
 
-<div id="cell-1" class="cell" data-execution_count="1">
+<section id="diffusion-models-in-bayesflow" class="level1">
+<h1>Diffusion models in BayesFlow</h1>
+<div id="cell-2" class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>os.environ[<span class="st">"KERAS_BACKEND"</span>] <span class="op">=</span> <span class="st">"tensorflow"</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> keras</span>
@@ -242,7 +250,7 @@ window.Quarto = {
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy <span class="im">import</span> stats</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-2" class="cell" data-execution_count="2">
+<div id="cell-3" class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> evidence_accumulation(nu, max_t, dt):</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    timesteps <span class="op">=</span> <span class="bu">int</span>(max_t <span class="op">/</span> dt)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    t <span class="op">=</span> np.linspace(<span class="dv">0</span>, max_t, timesteps)</span>
@@ -268,8 +276,10 @@ window.Quarto = {
 </div>
 </div>
 </div>
+<section id="simple-response-time-wald-model" class="level2">
+<h2 class="anchored" data-anchor-id="simple-response-time-wald-model">Simple response time (Wald model)</h2>
 <p>Here we will train a simple response time model based on a single accumulator that diffuses with a drift <span class="math inline">\(\nu\)</span> to a decision threshold <span class="math inline">\(\alpha\)</span>. For more background about the Wald model, see Anders, Alario, &amp; van Maanen (2016). Here we will estimate only the drift and decision threshold, no non-decision time or variability in starting point. In this case, the mean and a standard deviation of the response times are sufficient statistics, so we do not need a summary network.</p>
-<div id="cell-4" class="cell" data-execution_count="3">
+<div id="cell-5" class="cell" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> prior():</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># drift rate</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    nu<span class="op">=</span>np.random.gamma(shape<span class="op">=</span><span class="dv">10</span>, scale<span class="op">=</span><span class="fl">0.25</span>)</span>
@@ -303,10 +313,10 @@ window.Quarto = {
 <span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>simulator <span class="op">=</span> bf.make_simulator([prior, likelihood, summary])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-5" class="cell" data-execution_count="4">
+<div id="cell-6" class="cell" data-execution_count="4">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> simulator.sample(<span class="dv">1_000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-6" class="cell" data-execution_count="5">
+<div id="cell-7" class="cell" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>f<span class="op">=</span>bf.diagnostics.pairs_samples(</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    df, </span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    variable_keys<span class="op">=</span>[<span class="st">"nu"</span>, <span class="st">"alpha"</span>, <span class="st">"mean"</span>, <span class="st">"sd"</span>],</span>
@@ -319,7 +329,7 @@ window.Quarto = {
 </div>
 </div>
 </div>
-<div id="cell-7" class="cell" data-execution_count="6">
+<div id="cell-8" class="cell" data-execution_count="6">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>adapter <span class="op">=</span> (bf.Adapter()</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    .constrain([<span class="st">"nu"</span>, <span class="st">"alpha"</span>], lower<span class="op">=</span><span class="dv">0</span>)</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    .concatenate([<span class="st">"nu"</span>, <span class="st">"alpha"</span>], into<span class="op">=</span><span class="st">"inference_variables"</span>)</span>
@@ -327,7 +337,7 @@ window.Quarto = {
 <span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    .drop(<span class="st">"rt"</span>)</span>
 <span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-8" class="cell" data-execution_count="7">
+<div id="cell-9" class="cell" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>workflow <span class="op">=</span> bf.BasicWorkflow(</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    simulator <span class="op">=</span> simulator,</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    adapter <span class="op">=</span> adapter,</span>
@@ -336,11 +346,11 @@ window.Quarto = {
 <span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    inference_conditions <span class="op">=</span> [<span class="st">"mean"</span>, <span class="st">"sd"</span>]</span>
 <span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-9" class="cell" data-execution_count="8">
+<div id="cell-10" class="cell" data-execution_count="8">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>train_data <span class="op">=</span> simulator.sample(<span class="dv">5_000</span>)</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>validation_data <span class="op">=</span> simulator.sample(<span class="dv">1_000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-10" class="cell" data-execution_count="9">
+<div id="cell-11" class="cell" data-execution_count="9">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>history<span class="op">=</span>workflow.fit_offline(</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    data<span class="op">=</span>train_data, </span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    epochs<span class="op">=</span><span class="dv">50</span>, </span>
@@ -353,108 +363,108 @@ INFO:bayesflow:Building on a test batch.</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Epoch 1/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 6s 29ms/step - loss: 4.2478 - loss/inference_loss: 4.2478 - val_loss: 3.2971 - val_loss/inference_loss: 3.2971
+20/20 ━━━━━━━━━━━━━━━━━━━━ 6s 31ms/step - loss: 4.3237 - loss/inference_loss: 4.3237 - val_loss: 3.2620 - val_loss/inference_loss: 3.2620
 Epoch 2/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 10ms/step - loss: 2.9337 - loss/inference_loss: 2.9337 - val_loss: 2.6266 - val_loss/inference_loss: 2.6266
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 9ms/step - loss: 2.9751 - loss/inference_loss: 2.9751 - val_loss: 2.6640 - val_loss/inference_loss: 2.6640
 Epoch 3/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 9ms/step - loss: 2.5289 - loss/inference_loss: 2.5289 - val_loss: 2.4140 - val_loss/inference_loss: 2.4140
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 9ms/step - loss: 2.5618 - loss/inference_loss: 2.5618 - val_loss: 2.4644 - val_loss/inference_loss: 2.4644
 Epoch 4/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 9ms/step - loss: 2.3225 - loss/inference_loss: 2.3225 - val_loss: 2.1312 - val_loss/inference_loss: 2.1312
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 10ms/step - loss: 2.3460 - loss/inference_loss: 2.3460 - val_loss: 2.2887 - val_loss/inference_loss: 2.2887
 Epoch 5/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 10ms/step - loss: 2.1697 - loss/inference_loss: 2.1697 - val_loss: 1.9862 - val_loss/inference_loss: 1.9862
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 10ms/step - loss: 2.1960 - loss/inference_loss: 2.1960 - val_loss: 2.0773 - val_loss/inference_loss: 2.0773
 Epoch 6/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - loss: 1.9923 - loss/inference_loss: 1.9923 - val_loss: 1.9073 - val_loss/inference_loss: 1.9073
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - loss: 2.0349 - loss/inference_loss: 2.0349 - val_loss: 1.9428 - val_loss/inference_loss: 1.9428
 Epoch 7/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - loss: 1.7246 - loss/inference_loss: 1.7246 - val_loss: 1.4878 - val_loss/inference_loss: 1.4878
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - loss: 1.8103 - loss/inference_loss: 1.8103 - val_loss: 1.6752 - val_loss/inference_loss: 1.6752
 Epoch 8/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - loss: 1.2075 - loss/inference_loss: 1.2075 - val_loss: 0.6958 - val_loss/inference_loss: 0.6958
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - loss: 1.4347 - loss/inference_loss: 1.4347 - val_loss: 1.0306 - val_loss/inference_loss: 1.0306
 Epoch 9/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - loss: 0.4581 - loss/inference_loss: 0.4581 - val_loss: -0.1159 - val_loss/inference_loss: -0.1159
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - loss: 0.6755 - loss/inference_loss: 0.6755 - val_loss: 0.1332 - val_loss/inference_loss: 0.1332
 Epoch 10/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - loss: -0.3128 - loss/inference_loss: -0.3128 - val_loss: -0.5834 - val_loss/inference_loss: -0.5834
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - loss: -0.0722 - loss/inference_loss: -0.0722 - val_loss: -0.5113 - val_loss/inference_loss: -0.5113
 Epoch 11/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - loss: -0.7989 - loss/inference_loss: -0.7989 - val_loss: -1.0047 - val_loss/inference_loss: -1.0047
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - loss: -0.6561 - loss/inference_loss: -0.6561 - val_loss: -0.9005 - val_loss/inference_loss: -0.9005
 Epoch 12/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - loss: -0.9230 - loss/inference_loss: -0.9230 - val_loss: -0.8459 - val_loss/inference_loss: -0.8459
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - loss: -0.9802 - loss/inference_loss: -0.9802 - val_loss: -1.0020 - val_loss/inference_loss: -1.0020
 Epoch 13/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - loss: -0.9950 - loss/inference_loss: -0.9950 - val_loss: -1.1401 - val_loss/inference_loss: -1.1401
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - loss: -1.0407 - loss/inference_loss: -1.0407 - val_loss: -1.1719 - val_loss/inference_loss: -1.1719
 Epoch 14/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - loss: -1.1003 - loss/inference_loss: -1.1003 - val_loss: -1.3110 - val_loss/inference_loss: -1.3110
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - loss: -1.0787 - loss/inference_loss: -1.0787 - val_loss: -1.0381 - val_loss/inference_loss: -1.0381
 Epoch 15/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 13ms/step - loss: -1.1561 - loss/inference_loss: -1.1561 - val_loss: -1.3105 - val_loss/inference_loss: -1.3105
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 13ms/step - loss: -1.0662 - loss/inference_loss: -1.0662 - val_loss: -1.1802 - val_loss/inference_loss: -1.1802
 Epoch 16/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 14ms/step - loss: -1.1491 - loss/inference_loss: -1.1491 - val_loss: -1.2032 - val_loss/inference_loss: -1.2032
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - loss: -1.1526 - loss/inference_loss: -1.1526 - val_loss: -1.1777 - val_loss/inference_loss: -1.1777
 Epoch 17/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 13ms/step - loss: -1.1957 - loss/inference_loss: -1.1957 - val_loss: -1.3906 - val_loss/inference_loss: -1.3906
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - loss: -1.1973 - loss/inference_loss: -1.1973 - val_loss: -1.3017 - val_loss/inference_loss: -1.3017
 Epoch 18/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 13ms/step - loss: -1.2044 - loss/inference_loss: -1.2044 - val_loss: -1.2953 - val_loss/inference_loss: -1.2953
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - loss: -1.2158 - loss/inference_loss: -1.2158 - val_loss: -1.1972 - val_loss/inference_loss: -1.1972
 Epoch 19/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - loss: -1.2114 - loss/inference_loss: -1.2114 - val_loss: -1.2180 - val_loss/inference_loss: -1.2180
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 15ms/step - loss: -1.2340 - loss/inference_loss: -1.2340 - val_loss: -1.1711 - val_loss/inference_loss: -1.1711
 Epoch 20/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - loss: -1.2200 - loss/inference_loss: -1.2200 - val_loss: -1.1664 - val_loss/inference_loss: -1.1664
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 16ms/step - loss: -1.2433 - loss/inference_loss: -1.2433 - val_loss: -1.3729 - val_loss/inference_loss: -1.3729
 Epoch 21/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 13ms/step - loss: -1.2478 - loss/inference_loss: -1.2478 - val_loss: -1.3229 - val_loss/inference_loss: -1.3229
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 16ms/step - loss: -1.2589 - loss/inference_loss: -1.2589 - val_loss: -1.2672 - val_loss/inference_loss: -1.2672
 Epoch 22/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - loss: -1.2740 - loss/inference_loss: -1.2740 - val_loss: -1.2695 - val_loss/inference_loss: -1.2695
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 16ms/step - loss: -1.2627 - loss/inference_loss: -1.2627 - val_loss: -1.1731 - val_loss/inference_loss: -1.1731
 Epoch 23/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 13ms/step - loss: -1.2877 - loss/inference_loss: -1.2877 - val_loss: -1.2807 - val_loss/inference_loss: -1.2807
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 16ms/step - loss: -1.2662 - loss/inference_loss: -1.2662 - val_loss: -1.2593 - val_loss/inference_loss: -1.2593
 Epoch 24/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 13ms/step - loss: -1.3179 - loss/inference_loss: -1.3179 - val_loss: -1.2797 - val_loss/inference_loss: -1.2797
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 18ms/step - loss: -1.2929 - loss/inference_loss: -1.2929 - val_loss: -1.3146 - val_loss/inference_loss: -1.3146
 Epoch 25/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - loss: -1.3272 - loss/inference_loss: -1.3272 - val_loss: -1.3961 - val_loss/inference_loss: -1.3961
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 16ms/step - loss: -1.2873 - loss/inference_loss: -1.2873 - val_loss: -1.1808 - val_loss/inference_loss: -1.1808
 Epoch 26/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 13ms/step - loss: -1.3455 - loss/inference_loss: -1.3455 - val_loss: -1.2804 - val_loss/inference_loss: -1.2804
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 13ms/step - loss: -1.2965 - loss/inference_loss: -1.2965 - val_loss: -1.2206 - val_loss/inference_loss: -1.2206
 Epoch 27/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - loss: -1.3473 - loss/inference_loss: -1.3473 - val_loss: -1.4438 - val_loss/inference_loss: -1.4438
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 17ms/step - loss: -1.2928 - loss/inference_loss: -1.2928 - val_loss: -1.2815 - val_loss/inference_loss: -1.2815
 Epoch 28/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 13ms/step - loss: -1.3510 - loss/inference_loss: -1.3510 - val_loss: -1.4510 - val_loss/inference_loss: -1.4510
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 16ms/step - loss: -1.3085 - loss/inference_loss: -1.3085 - val_loss: -1.2836 - val_loss/inference_loss: -1.2836
 Epoch 29/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - loss: -1.3552 - loss/inference_loss: -1.3552 - val_loss: -1.4723 - val_loss/inference_loss: -1.4723
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 16ms/step - loss: -1.3052 - loss/inference_loss: -1.3052 - val_loss: -1.3027 - val_loss/inference_loss: -1.3027
 Epoch 30/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - loss: -1.3745 - loss/inference_loss: -1.3745 - val_loss: -1.3275 - val_loss/inference_loss: -1.3275
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 16ms/step - loss: -1.3032 - loss/inference_loss: -1.3032 - val_loss: -1.3187 - val_loss/inference_loss: -1.3187
 Epoch 31/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 15ms/step - loss: -1.3644 - loss/inference_loss: -1.3644 - val_loss: -1.3631 - val_loss/inference_loss: -1.3631
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 15ms/step - loss: -1.3289 - loss/inference_loss: -1.3289 - val_loss: -1.3867 - val_loss/inference_loss: -1.3867
 Epoch 32/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - loss: -1.3738 - loss/inference_loss: -1.3738 - val_loss: -1.4041 - val_loss/inference_loss: -1.4041
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 16ms/step - loss: -1.3229 - loss/inference_loss: -1.3229 - val_loss: -1.3211 - val_loss/inference_loss: -1.3211
 Epoch 33/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - loss: -1.3902 - loss/inference_loss: -1.3902 - val_loss: -1.5244 - val_loss/inference_loss: -1.5244
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 15ms/step - loss: -1.3265 - loss/inference_loss: -1.3265 - val_loss: -1.3229 - val_loss/inference_loss: -1.3229
 Epoch 34/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 13ms/step - loss: -1.3940 - loss/inference_loss: -1.3940 - val_loss: -1.4587 - val_loss/inference_loss: -1.4587
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 15ms/step - loss: -1.3420 - loss/inference_loss: -1.3420 - val_loss: -1.4363 - val_loss/inference_loss: -1.4363
 Epoch 35/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 13ms/step - loss: -1.3896 - loss/inference_loss: -1.3896 - val_loss: -1.4295 - val_loss/inference_loss: -1.4295
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 15ms/step - loss: -1.3360 - loss/inference_loss: -1.3360 - val_loss: -1.3724 - val_loss/inference_loss: -1.3724
 Epoch 36/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - loss: -1.3862 - loss/inference_loss: -1.3862 - val_loss: -1.4016 - val_loss/inference_loss: -1.4016
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 14ms/step - loss: -1.3250 - loss/inference_loss: -1.3250 - val_loss: -1.4013 - val_loss/inference_loss: -1.4013
 Epoch 37/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 14ms/step - loss: -1.3927 - loss/inference_loss: -1.3927 - val_loss: -1.3490 - val_loss/inference_loss: -1.3490
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 15ms/step - loss: -1.3528 - loss/inference_loss: -1.3528 - val_loss: -1.4209 - val_loss/inference_loss: -1.4209
 Epoch 38/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 13ms/step - loss: -1.3859 - loss/inference_loss: -1.3859 - val_loss: -1.4767 - val_loss/inference_loss: -1.4767
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 15ms/step - loss: -1.3484 - loss/inference_loss: -1.3484 - val_loss: -1.3968 - val_loss/inference_loss: -1.3968
 Epoch 39/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - loss: -1.4036 - loss/inference_loss: -1.4036 - val_loss: -1.4122 - val_loss/inference_loss: -1.4122
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 15ms/step - loss: -1.3481 - loss/inference_loss: -1.3481 - val_loss: -1.3297 - val_loss/inference_loss: -1.3297
 Epoch 40/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - loss: -1.4002 - loss/inference_loss: -1.4002 - val_loss: -1.4689 - val_loss/inference_loss: -1.4689
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 15ms/step - loss: -1.3504 - loss/inference_loss: -1.3504 - val_loss: -1.4910 - val_loss/inference_loss: -1.4910
 Epoch 41/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - loss: -1.4084 - loss/inference_loss: -1.4084 - val_loss: -1.5304 - val_loss/inference_loss: -1.5304
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 15ms/step - loss: -1.3585 - loss/inference_loss: -1.3585 - val_loss: -1.2492 - val_loss/inference_loss: -1.2492
 Epoch 42/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 13ms/step - loss: -1.4136 - loss/inference_loss: -1.4136 - val_loss: -1.4460 - val_loss/inference_loss: -1.4460
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 17ms/step - loss: -1.3609 - loss/inference_loss: -1.3609 - val_loss: -1.3917 - val_loss/inference_loss: -1.3917
 Epoch 43/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 13ms/step - loss: -1.4095 - loss/inference_loss: -1.4095 - val_loss: -1.5936 - val_loss/inference_loss: -1.5936
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 15ms/step - loss: -1.3535 - loss/inference_loss: -1.3535 - val_loss: -1.3360 - val_loss/inference_loss: -1.3360
 Epoch 44/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - loss: -1.4165 - loss/inference_loss: -1.4165 - val_loss: -1.3300 - val_loss/inference_loss: -1.3300
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 15ms/step - loss: -1.3583 - loss/inference_loss: -1.3583 - val_loss: -1.3302 - val_loss/inference_loss: -1.3302
 Epoch 45/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - loss: -1.4092 - loss/inference_loss: -1.4092 - val_loss: -1.4554 - val_loss/inference_loss: -1.4554
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 15ms/step - loss: -1.3607 - loss/inference_loss: -1.3607 - val_loss: -1.3974 - val_loss/inference_loss: -1.3974
 Epoch 46/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - loss: -1.4121 - loss/inference_loss: -1.4121 - val_loss: -1.4771 - val_loss/inference_loss: -1.4771
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 15ms/step - loss: -1.3665 - loss/inference_loss: -1.3665 - val_loss: -1.3183 - val_loss/inference_loss: -1.3183
 Epoch 47/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - loss: -1.4165 - loss/inference_loss: -1.4165 - val_loss: -1.3761 - val_loss/inference_loss: -1.3761
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 15ms/step - loss: -1.3582 - loss/inference_loss: -1.3582 - val_loss: -1.2993 - val_loss/inference_loss: -1.2993
 Epoch 48/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - loss: -1.4188 - loss/inference_loss: -1.4188 - val_loss: -1.4687 - val_loss/inference_loss: -1.4687
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 15ms/step - loss: -1.3658 - loss/inference_loss: -1.3658 - val_loss: -1.2053 - val_loss/inference_loss: -1.2053
 Epoch 49/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 13ms/step - loss: -1.4108 - loss/inference_loss: -1.4108 - val_loss: -1.4455 - val_loss/inference_loss: -1.4455
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 17ms/step - loss: -1.3575 - loss/inference_loss: -1.3575 - val_loss: -1.3078 - val_loss/inference_loss: -1.3078
 Epoch 50/50
-20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step - loss: -1.4162 - loss/inference_loss: -1.4162 - val_loss: -1.4218 - val_loss/inference_loss: -1.4218</code></pre>
+20/20 ━━━━━━━━━━━━━━━━━━━━ 0s 16ms/step - loss: -1.3586 - loss/inference_loss: -1.3586 - val_loss: -1.3565 - val_loss/inference_loss: -1.3565</code></pre>
 </div>
 </div>
-<div id="cell-11" class="cell" data-execution_count="10">
+<div id="cell-12" class="cell" data-execution_count="10">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>test_data <span class="op">=</span> simulator.sample(<span class="dv">1_000</span>)</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>plots<span class="op">=</span>workflow.plot_default_diagnostics(test_data<span class="op">=</span>test_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
@@ -486,12 +496,13 @@ Epoch 50/50
 </div>
 </div>
 </div>
+</section>
 <section id="two-choice-task-racing-diffusion-model" class="level2">
 <h2 class="anchored" data-anchor-id="two-choice-task-racing-diffusion-model">Two choice task (Racing diffusion model)</h2>
 <p>We’ll assume a simple RDM with two choice alternatives (Tillman et al., 2020).</p>
 <p>Here we will simplify the model to include no bias, no variability in starting points. Instead of modeling one accumulator for each of [left, right] responses, we will simply model one accumulator for “incorrect” and one accumulator for “correct” response. This makes it a bit easier to simulate from (we do not need to simulate stimuli).</p>
 <p>The model has four parameters: 2 drift rates (incorrect - <span class="math inline">\(\nu_0\)</span>, correct <span class="math inline">\(\nu_1\)</span>), decision threshold <span class="math inline">\(\alpha\)</span>, and non-decision time <span class="math inline">\(\tau\)</span>.</p>
-<div id="cell-13" class="cell" data-execution_count="11">
+<div id="cell-14" class="cell" data-execution_count="11">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> context(n<span class="op">=</span><span class="va">None</span>):</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> n <span class="kw">is</span> <span class="va">None</span>:</span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>        n <span class="op">=</span> np.random.randint(<span class="dv">200</span>, <span class="dv">351</span>)</span>
@@ -505,45 +516,47 @@ Epoch 50/50
 <span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>        alpha<span class="op">=</span>np.random.gamma(shape<span class="op">=</span><span class="dv">5</span>, scale<span class="op">=</span><span class="fl">0.2</span>)</span>
 <span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> tau <span class="kw">is</span> <span class="va">None</span>:</span>
 <span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>        tau<span class="op">=</span>np.random.exponential(<span class="fl">0.15</span>)</span>
-<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">dict</span>(nu<span class="op">=</span>nu, alpha<span class="op">=</span>alpha, tau<span class="op">=</span>tau)</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>        tau<span class="op">=</span>tau.item()</span>
 <span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a><span class="co"># generate data for a single trial</span></span>
-<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> trial(nu, alpha, tau, max_t, dt):</span>
-<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>    response <span class="op">=</span> <span class="op">-</span><span class="dv">1</span></span>
-<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>    min_t <span class="op">=</span> max_t</span>
-<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>    <span class="co"># loop over accumulators</span></span>
-<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>    <span class="co"># if an accumulator has a smaller passage time than the current minimum</span></span>
-<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>    <span class="co"># save it as the fastest accumulator (response)</span></span>
-<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> resp, drift <span class="kw">in</span> <span class="bu">enumerate</span>(nu):</span>
-<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>        t, evidence <span class="op">=</span> evidence_accumulation(drift, max_t, dt)</span>
-<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>        passage <span class="op">=</span> np.argmax(evidence <span class="op">&gt;</span> alpha)</span>
-<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a>        t <span class="op">=</span> max_t <span class="cf">if</span> passage<span class="op">==</span><span class="dv">0</span> <span class="cf">else</span> t[passage]</span>
-<span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> t <span class="op">&lt;</span> min_t:</span>
-<span id="cb14-30"><a href="#cb14-30" aria-hidden="true" tabindex="-1"></a>            min_t <span class="op">=</span> t</span>
-<span id="cb14-31"><a href="#cb14-31" aria-hidden="true" tabindex="-1"></a>            response <span class="op">=</span> resp</span>
-<span id="cb14-32"><a href="#cb14-32" aria-hidden="true" tabindex="-1"></a>            </span>
-<span id="cb14-33"><a href="#cb14-33" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> min_t<span class="op">+</span>tau, response</span>
-<span id="cb14-34"><a href="#cb14-34" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-35"><a href="#cb14-35" aria-hidden="true" tabindex="-1"></a><span class="co"># generate data for n trials</span></span>
-<span id="cb14-36"><a href="#cb14-36" aria-hidden="true" tabindex="-1"></a><span class="co"># keep the data.shape always to max_n</span></span>
-<span id="cb14-37"><a href="#cb14-37" aria-hidden="true" tabindex="-1"></a><span class="co"># the rest is filled with 0s</span></span>
-<span id="cb14-38"><a href="#cb14-38" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> likelihood(n, nu, alpha, tau, max_t<span class="op">=</span><span class="fl">3.0</span>, dt<span class="op">=</span><span class="fl">0.02</span>, max_n<span class="op">=</span><span class="dv">350</span>):</span>
-<span id="cb14-39"><a href="#cb14-39" aria-hidden="true" tabindex="-1"></a>    rt <span class="op">=</span> np.zeros(max_n)</span>
-<span id="cb14-40"><a href="#cb14-40" aria-hidden="true" tabindex="-1"></a>    response <span class="op">=</span> np.zeros(max_n)</span>
-<span id="cb14-41"><a href="#cb14-41" aria-hidden="true" tabindex="-1"></a>    observed <span class="op">=</span> np.zeros(max_n)</span>
-<span id="cb14-42"><a href="#cb14-42" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(n):</span>
-<span id="cb14-43"><a href="#cb14-43" aria-hidden="true" tabindex="-1"></a>        result <span class="op">=</span> trial(nu, alpha, tau, max_t, dt)</span>
-<span id="cb14-44"><a href="#cb14-44" aria-hidden="true" tabindex="-1"></a>        rt[i] <span class="op">=</span> result[<span class="dv">0</span>]</span>
-<span id="cb14-45"><a href="#cb14-45" aria-hidden="true" tabindex="-1"></a>        response[i] <span class="op">=</span> result[<span class="dv">1</span>]</span>
-<span id="cb14-46"><a href="#cb14-46" aria-hidden="true" tabindex="-1"></a>        observed[i] <span class="op">=</span> <span class="dv">1</span></span>
-<span id="cb14-47"><a href="#cb14-47" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-48"><a href="#cb14-48" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">dict</span>(rt<span class="op">=</span>rt, response<span class="op">=</span>response, observed<span class="op">=</span>observed)</span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">dict</span>(nu<span class="op">=</span>nu, alpha<span class="op">=</span>alpha, tau<span class="op">=</span>tau)</span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a><span class="co"># generate data for a single trial</span></span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> trial(nu, alpha, tau, max_t, dt):</span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>    response <span class="op">=</span> <span class="op">-</span><span class="dv">1</span></span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>    min_t <span class="op">=</span> max_t</span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>    <span class="co"># loop over accumulators</span></span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>    <span class="co"># if an accumulator has a smaller passage time than the current minimum</span></span>
+<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>    <span class="co"># save it as the fastest accumulator (response)</span></span>
+<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> resp, drift <span class="kw">in</span> <span class="bu">enumerate</span>(nu):</span>
+<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a>        t, evidence <span class="op">=</span> evidence_accumulation(drift, max_t, dt)</span>
+<span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a>        passage <span class="op">=</span> np.argmax(evidence <span class="op">&gt;</span> alpha)</span>
+<span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a>        t <span class="op">=</span> max_t <span class="cf">if</span> passage<span class="op">==</span><span class="dv">0</span> <span class="cf">else</span> t[passage]</span>
+<span id="cb14-30"><a href="#cb14-30" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb14-31"><a href="#cb14-31" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> t <span class="op">&lt;</span> min_t:</span>
+<span id="cb14-32"><a href="#cb14-32" aria-hidden="true" tabindex="-1"></a>            min_t <span class="op">=</span> t</span>
+<span id="cb14-33"><a href="#cb14-33" aria-hidden="true" tabindex="-1"></a>            response <span class="op">=</span> resp</span>
+<span id="cb14-34"><a href="#cb14-34" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb14-35"><a href="#cb14-35" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> min_t<span class="op">+</span>tau, response</span>
+<span id="cb14-36"><a href="#cb14-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-37"><a href="#cb14-37" aria-hidden="true" tabindex="-1"></a><span class="co"># generate data for n trials</span></span>
+<span id="cb14-38"><a href="#cb14-38" aria-hidden="true" tabindex="-1"></a><span class="co"># keep the data.shape always to max_n</span></span>
+<span id="cb14-39"><a href="#cb14-39" aria-hidden="true" tabindex="-1"></a><span class="co"># the rest is filled with 0s</span></span>
+<span id="cb14-40"><a href="#cb14-40" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> likelihood(n, nu, alpha, tau, max_t<span class="op">=</span><span class="fl">3.0</span>, dt<span class="op">=</span><span class="fl">0.02</span>, max_n<span class="op">=</span><span class="dv">350</span>):</span>
+<span id="cb14-41"><a href="#cb14-41" aria-hidden="true" tabindex="-1"></a>    rt <span class="op">=</span> np.zeros(max_n)</span>
+<span id="cb14-42"><a href="#cb14-42" aria-hidden="true" tabindex="-1"></a>    response <span class="op">=</span> np.zeros(max_n)</span>
+<span id="cb14-43"><a href="#cb14-43" aria-hidden="true" tabindex="-1"></a>    observed <span class="op">=</span> np.zeros(max_n)</span>
+<span id="cb14-44"><a href="#cb14-44" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(n):</span>
+<span id="cb14-45"><a href="#cb14-45" aria-hidden="true" tabindex="-1"></a>        result <span class="op">=</span> trial(nu, alpha, tau, max_t, dt)</span>
+<span id="cb14-46"><a href="#cb14-46" aria-hidden="true" tabindex="-1"></a>        rt[i] <span class="op">=</span> result[<span class="dv">0</span>]</span>
+<span id="cb14-47"><a href="#cb14-47" aria-hidden="true" tabindex="-1"></a>        response[i] <span class="op">=</span> result[<span class="dv">1</span>]</span>
+<span id="cb14-48"><a href="#cb14-48" aria-hidden="true" tabindex="-1"></a>        observed[i] <span class="op">=</span> <span class="dv">1</span></span>
 <span id="cb14-49"><a href="#cb14-49" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-50"><a href="#cb14-50" aria-hidden="true" tabindex="-1"></a>simulator <span class="op">=</span> bf.make_simulator([context, prior, likelihood])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb14-50"><a href="#cb14-50" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">dict</span>(rt<span class="op">=</span>rt, response<span class="op">=</span>response, observed<span class="op">=</span>observed)</span>
+<span id="cb14-51"><a href="#cb14-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-52"><a href="#cb14-52" aria-hidden="true" tabindex="-1"></a>simulator <span class="op">=</span> bf.make_simulator([context, prior, likelihood])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-14" class="cell" data-execution_count="12">
+<div id="cell-15" class="cell" data-execution_count="12">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>adapter <span class="op">=</span> (bf.Adapter()</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    .as_set([<span class="st">"rt"</span>, <span class="st">"response"</span>, <span class="st">"observed"</span>])</span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    .constrain([<span class="st">"nu"</span>, <span class="st">"alpha"</span>, <span class="st">"tau"</span>], lower<span class="op">=</span><span class="dv">0</span>)</span>
@@ -555,7 +568,7 @@ Epoch 50/50
 <span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    .rename(<span class="st">"n"</span>, <span class="st">"inference_conditions"</span>)</span>
 <span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-15" class="cell" data-execution_count="13">
+<div id="cell-16" class="cell" data-execution_count="13">
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>workflow <span class="op">=</span> bf.BasicWorkflow(</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    simulator <span class="op">=</span> simulator,</span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    adapter <span class="op">=</span> adapter,</span>
@@ -572,11 +585,11 @@ Epoch 50/50
 <span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>    summary_variables <span class="op">=</span> [<span class="st">"rt"</span>, <span class="st">"response"</span>, <span class="st">"observed"</span>]</span>
 <span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-16" class="cell" data-execution_count="14">
+<div id="cell-17" class="cell" data-execution_count="14">
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>train_data <span class="op">=</span> simulator.sample(<span class="dv">5_000</span>)</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>validation_data <span class="op">=</span> simulator.sample(<span class="dv">1_000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-17" class="cell" data-execution_count="15">
+<div id="cell-18" class="cell" data-execution_count="15">
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>history<span class="op">=</span>workflow.fit_offline(</span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>    data<span class="op">=</span>train_data, </span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    epochs<span class="op">=</span><span class="dv">100</span>, </span>
@@ -589,208 +602,208 @@ INFO:bayesflow:Building on a test batch.</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Epoch 1/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 21s 570ms/step - loss: 20.9708 - loss/inference_loss: 20.6212 - loss/summary_loss: 0.3496 - val_loss: 6.4583 - val_loss/inference_loss: 6.3037 - val_loss/summary_loss: 0.1545
+20/20 ━━━━━━━━━━━━━━━━━━━━ 34s 1s/step - loss: 14.3609 - loss/inference_loss: 14.0609 - loss/summary_loss: 0.3000 - val_loss: 6.1114 - val_loss/inference_loss: 5.9787 - val_loss/summary_loss: 0.1327
 Epoch 2/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 536ms/step - loss: 5.9631 - loss/inference_loss: 5.8166 - loss/summary_loss: 0.1465 - val_loss: 5.5611 - val_loss/inference_loss: 5.3896 - val_loss/summary_loss: 0.1715
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 633ms/step - loss: 5.8206 - loss/inference_loss: 5.6786 - loss/summary_loss: 0.1419 - val_loss: 5.5208 - val_loss/inference_loss: 5.3216 - val_loss/summary_loss: 0.1992
 Epoch 3/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 549ms/step - loss: 5.3252 - loss/inference_loss: 5.1295 - loss/summary_loss: 0.1957 - val_loss: 5.2970 - val_loss/inference_loss: 5.0639 - val_loss/summary_loss: 0.2331
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 645ms/step - loss: 5.2590 - loss/inference_loss: 5.0502 - loss/summary_loss: 0.2088 - val_loss: 5.1275 - val_loss/inference_loss: 4.9059 - val_loss/summary_loss: 0.2216
 Epoch 4/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 553ms/step - loss: 4.7897 - loss/inference_loss: 4.6077 - loss/summary_loss: 0.1820 - val_loss: 4.8683 - val_loss/inference_loss: 4.6740 - val_loss/summary_loss: 0.1943
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 649ms/step - loss: 4.7636 - loss/inference_loss: 4.5833 - loss/summary_loss: 0.1803 - val_loss: 4.5547 - val_loss/inference_loss: 4.4057 - val_loss/summary_loss: 0.1490
 Epoch 5/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 12s 581ms/step - loss: 4.4792 - loss/inference_loss: 4.3138 - loss/summary_loss: 0.1654 - val_loss: 4.7738 - val_loss/inference_loss: 4.6027 - val_loss/summary_loss: 0.1711
+20/20 ━━━━━━━━━━━━━━━━━━━━ 12s 607ms/step - loss: 4.4397 - loss/inference_loss: 4.2925 - loss/summary_loss: 0.1471 - val_loss: 4.3656 - val_loss/inference_loss: 4.2313 - val_loss/summary_loss: 0.1344
 Epoch 6/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 554ms/step - loss: 4.3321 - loss/inference_loss: 4.1743 - loss/summary_loss: 0.1578 - val_loss: 4.7285 - val_loss/inference_loss: 4.5732 - val_loss/summary_loss: 0.1553
+20/20 ━━━━━━━━━━━━━━━━━━━━ 12s 604ms/step - loss: 4.3418 - loss/inference_loss: 4.1914 - loss/summary_loss: 0.1504 - val_loss: 4.1845 - val_loss/inference_loss: 4.0441 - val_loss/summary_loss: 0.1405
 Epoch 7/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 12s 585ms/step - loss: 4.5421 - loss/inference_loss: 4.3665 - loss/summary_loss: 0.1756 - val_loss: 4.1935 - val_loss/inference_loss: 3.9998 - val_loss/summary_loss: 0.1937
+20/20 ━━━━━━━━━━━━━━━━━━━━ 12s 605ms/step - loss: 4.3237 - loss/inference_loss: 4.1712 - loss/summary_loss: 0.1525 - val_loss: 4.3240 - val_loss/inference_loss: 4.1473 - val_loss/summary_loss: 0.1767
 Epoch 8/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 572ms/step - loss: 4.2988 - loss/inference_loss: 4.1162 - loss/summary_loss: 0.1826 - val_loss: 4.1436 - val_loss/inference_loss: 3.9832 - val_loss/summary_loss: 0.1604
+20/20 ━━━━━━━━━━━━━━━━━━━━ 12s 613ms/step - loss: 4.1682 - loss/inference_loss: 4.0072 - loss/summary_loss: 0.1610 - val_loss: 3.9488 - val_loss/inference_loss: 3.8090 - val_loss/summary_loss: 0.1398
 Epoch 9/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 572ms/step - loss: 3.9947 - loss/inference_loss: 3.8410 - loss/summary_loss: 0.1537 - val_loss: 3.8679 - val_loss/inference_loss: 3.6978 - val_loss/summary_loss: 0.1701
+20/20 ━━━━━━━━━━━━━━━━━━━━ 12s 607ms/step - loss: 3.9366 - loss/inference_loss: 3.7888 - loss/summary_loss: 0.1479 - val_loss: 4.2893 - val_loss/inference_loss: 4.1522 - val_loss/summary_loss: 0.1371
 Epoch 10/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 565ms/step - loss: 3.8380 - loss/inference_loss: 3.6859 - loss/summary_loss: 0.1521 - val_loss: 3.7873 - val_loss/inference_loss: 3.6242 - val_loss/summary_loss: 0.1631
+20/20 ━━━━━━━━━━━━━━━━━━━━ 12s 607ms/step - loss: 3.8633 - loss/inference_loss: 3.7098 - loss/summary_loss: 0.1535 - val_loss: 4.0335 - val_loss/inference_loss: 3.9091 - val_loss/summary_loss: 0.1245
 Epoch 11/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 568ms/step - loss: 3.9673 - loss/inference_loss: 3.8106 - loss/summary_loss: 0.1567 - val_loss: 3.6799 - val_loss/inference_loss: 3.5074 - val_loss/summary_loss: 0.1725
+20/20 ━━━━━━━━━━━━━━━━━━━━ 12s 607ms/step - loss: 3.7262 - loss/inference_loss: 3.5701 - loss/summary_loss: 0.1562 - val_loss: 3.7161 - val_loss/inference_loss: 3.5764 - val_loss/summary_loss: 0.1397
 Epoch 12/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 571ms/step - loss: 4.0578 - loss/inference_loss: 3.8796 - loss/summary_loss: 0.1782 - val_loss: 3.7456 - val_loss/inference_loss: 3.5423 - val_loss/summary_loss: 0.2033
+20/20 ━━━━━━━━━━━━━━━━━━━━ 12s 609ms/step - loss: 3.6239 - loss/inference_loss: 3.4630 - loss/summary_loss: 0.1610 - val_loss: 3.5772 - val_loss/inference_loss: 3.4350 - val_loss/summary_loss: 0.1422
 Epoch 13/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 566ms/step - loss: 3.6058 - loss/inference_loss: 3.4265 - loss/summary_loss: 0.1794 - val_loss: 3.3420 - val_loss/inference_loss: 3.1763 - val_loss/summary_loss: 0.1657
+20/20 ━━━━━━━━━━━━━━━━━━━━ 12s 622ms/step - loss: 3.4660 - loss/inference_loss: 3.2979 - loss/summary_loss: 0.1681 - val_loss: 3.2676 - val_loss/inference_loss: 3.1305 - val_loss/summary_loss: 0.1371
 Epoch 14/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 568ms/step - loss: 3.4954 - loss/inference_loss: 3.3371 - loss/summary_loss: 0.1583 - val_loss: 3.8457 - val_loss/inference_loss: 3.6819 - val_loss/summary_loss: 0.1638
+20/20 ━━━━━━━━━━━━━━━━━━━━ 12s 622ms/step - loss: 3.4642 - loss/inference_loss: 3.3057 - loss/summary_loss: 0.1586 - val_loss: 3.6891 - val_loss/inference_loss: 3.5483 - val_loss/summary_loss: 0.1408
 Epoch 15/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 569ms/step - loss: 3.5513 - loss/inference_loss: 3.3970 - loss/summary_loss: 0.1543 - val_loss: 3.9955 - val_loss/inference_loss: 3.8269 - val_loss/summary_loss: 0.1686
+20/20 ━━━━━━━━━━━━━━━━━━━━ 12s 612ms/step - loss: 3.3781 - loss/inference_loss: 3.2192 - loss/summary_loss: 0.1588 - val_loss: 3.4303 - val_loss/inference_loss: 3.2832 - val_loss/summary_loss: 0.1471
 Epoch 16/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 12s 579ms/step - loss: 3.4844 - loss/inference_loss: 3.3220 - loss/summary_loss: 0.1624 - val_loss: 3.5121 - val_loss/inference_loss: 3.3520 - val_loss/summary_loss: 0.1601
+20/20 ━━━━━━━━━━━━━━━━━━━━ 12s 607ms/step - loss: 3.1897 - loss/inference_loss: 3.0271 - loss/summary_loss: 0.1626 - val_loss: 3.6857 - val_loss/inference_loss: 3.5336 - val_loss/summary_loss: 0.1521
 Epoch 17/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 12s 578ms/step - loss: 3.2603 - loss/inference_loss: 3.1055 - loss/summary_loss: 0.1548 - val_loss: 3.3735 - val_loss/inference_loss: 3.2034 - val_loss/summary_loss: 0.1702
+20/20 ━━━━━━━━━━━━━━━━━━━━ 12s 611ms/step - loss: 3.1959 - loss/inference_loss: 3.0351 - loss/summary_loss: 0.1608 - val_loss: 3.4023 - val_loss/inference_loss: 3.2598 - val_loss/summary_loss: 0.1426
 Epoch 18/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 12s 586ms/step - loss: 3.0964 - loss/inference_loss: 2.9365 - loss/summary_loss: 0.1599 - val_loss: 3.5813 - val_loss/inference_loss: 3.4131 - val_loss/summary_loss: 0.1682
+20/20 ━━━━━━━━━━━━━━━━━━━━ 12s 624ms/step - loss: 3.0804 - loss/inference_loss: 2.9221 - loss/summary_loss: 0.1583 - val_loss: 2.8908 - val_loss/inference_loss: 2.7297 - val_loss/summary_loss: 0.1611
 Epoch 19/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 568ms/step - loss: 2.9846 - loss/inference_loss: 2.8216 - loss/summary_loss: 0.1629 - val_loss: 2.9246 - val_loss/inference_loss: 2.7537 - val_loss/summary_loss: 0.1709
+20/20 ━━━━━━━━━━━━━━━━━━━━ 12s 618ms/step - loss: 3.0177 - loss/inference_loss: 2.8528 - loss/summary_loss: 0.1649 - val_loss: 3.3557 - val_loss/inference_loss: 3.1970 - val_loss/summary_loss: 0.1587
 Epoch 20/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 546ms/step - loss: 2.9375 - loss/inference_loss: 2.7749 - loss/summary_loss: 0.1626 - val_loss: 2.8463 - val_loss/inference_loss: 2.6795 - val_loss/summary_loss: 0.1668
+20/20 ━━━━━━━━━━━━━━━━━━━━ 12s 620ms/step - loss: 2.9631 - loss/inference_loss: 2.7981 - loss/summary_loss: 0.1650 - val_loss: 3.7985 - val_loss/inference_loss: 3.6307 - val_loss/summary_loss: 0.1678
 Epoch 21/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 558ms/step - loss: 2.8605 - loss/inference_loss: 2.6985 - loss/summary_loss: 0.1620 - val_loss: 2.5638 - val_loss/inference_loss: 2.3841 - val_loss/summary_loss: 0.1796
+20/20 ━━━━━━━━━━━━━━━━━━━━ 12s 606ms/step - loss: 2.9434 - loss/inference_loss: 2.7783 - loss/summary_loss: 0.1652 - val_loss: 2.8577 - val_loss/inference_loss: 2.7084 - val_loss/summary_loss: 0.1493
 Epoch 22/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 577ms/step - loss: 2.8183 - loss/inference_loss: 2.6561 - loss/summary_loss: 0.1622 - val_loss: 3.1124 - val_loss/inference_loss: 2.9541 - val_loss/summary_loss: 0.1583
+20/20 ━━━━━━━━━━━━━━━━━━━━ 12s 618ms/step - loss: 2.9067 - loss/inference_loss: 2.7405 - loss/summary_loss: 0.1662 - val_loss: 3.5980 - val_loss/inference_loss: 3.4340 - val_loss/summary_loss: 0.1640
 Epoch 23/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 573ms/step - loss: 2.7191 - loss/inference_loss: 2.5615 - loss/summary_loss: 0.1575 - val_loss: 2.6894 - val_loss/inference_loss: 2.5268 - val_loss/summary_loss: 0.1626
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 664ms/step - loss: 2.9271 - loss/inference_loss: 2.7585 - loss/summary_loss: 0.1686 - val_loss: 3.5134 - val_loss/inference_loss: 3.3457 - val_loss/summary_loss: 0.1677
 Epoch 24/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 12s 577ms/step - loss: 2.6972 - loss/inference_loss: 2.5380 - loss/summary_loss: 0.1593 - val_loss: 2.8283 - val_loss/inference_loss: 2.6653 - val_loss/summary_loss: 0.1629
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 666ms/step - loss: 2.8916 - loss/inference_loss: 2.7192 - loss/summary_loss: 0.1724 - val_loss: 2.5384 - val_loss/inference_loss: 2.3735 - val_loss/summary_loss: 0.1649
 Epoch 25/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 573ms/step - loss: 2.6366 - loss/inference_loss: 2.4786 - loss/summary_loss: 0.1580 - val_loss: 2.4028 - val_loss/inference_loss: 2.2342 - val_loss/summary_loss: 0.1686
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 655ms/step - loss: 2.6834 - loss/inference_loss: 2.5162 - loss/summary_loss: 0.1673 - val_loss: 2.9493 - val_loss/inference_loss: 2.7742 - val_loss/summary_loss: 0.1752
 Epoch 26/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 12s 584ms/step - loss: 2.5273 - loss/inference_loss: 2.3641 - loss/summary_loss: 0.1631 - val_loss: 3.2753 - val_loss/inference_loss: 3.1085 - val_loss/summary_loss: 0.1669
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 663ms/step - loss: 2.7069 - loss/inference_loss: 2.5339 - loss/summary_loss: 0.1729 - val_loss: 2.7834 - val_loss/inference_loss: 2.6410 - val_loss/summary_loss: 0.1424
 Epoch 27/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 552ms/step - loss: 2.5849 - loss/inference_loss: 2.4246 - loss/summary_loss: 0.1604 - val_loss: 2.7328 - val_loss/inference_loss: 2.5645 - val_loss/summary_loss: 0.1684
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 631ms/step - loss: 2.7247 - loss/inference_loss: 2.5504 - loss/summary_loss: 0.1743 - val_loss: 2.7583 - val_loss/inference_loss: 2.6091 - val_loss/summary_loss: 0.1491
 Epoch 28/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 544ms/step - loss: 2.4469 - loss/inference_loss: 2.2853 - loss/summary_loss: 0.1616 - val_loss: 2.4741 - val_loss/inference_loss: 2.3143 - val_loss/summary_loss: 0.1597
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 655ms/step - loss: 3.0438 - loss/inference_loss: 2.8668 - loss/summary_loss: 0.1770 - val_loss: 2.7321 - val_loss/inference_loss: 2.5490 - val_loss/summary_loss: 0.1831
 Epoch 29/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 544ms/step - loss: 2.3149 - loss/inference_loss: 2.1566 - loss/summary_loss: 0.1584 - val_loss: 2.0014 - val_loss/inference_loss: 1.8472 - val_loss/summary_loss: 0.1542
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 646ms/step - loss: 3.3625 - loss/inference_loss: 3.1734 - loss/summary_loss: 0.1891 - val_loss: 3.2479 - val_loss/inference_loss: 3.0610 - val_loss/summary_loss: 0.1869
 Epoch 30/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 545ms/step - loss: 2.3523 - loss/inference_loss: 2.1965 - loss/summary_loss: 0.1558 - val_loss: 2.6232 - val_loss/inference_loss: 2.4516 - val_loss/summary_loss: 0.1716
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 644ms/step - loss: 2.8979 - loss/inference_loss: 2.7022 - loss/summary_loss: 0.1956 - val_loss: 3.0476 - val_loss/inference_loss: 2.8501 - val_loss/summary_loss: 0.1975
 Epoch 31/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 543ms/step - loss: 2.3384 - loss/inference_loss: 2.1854 - loss/summary_loss: 0.1530 - val_loss: 2.3379 - val_loss/inference_loss: 2.1691 - val_loss/summary_loss: 0.1688
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 642ms/step - loss: 2.8198 - loss/inference_loss: 2.6258 - loss/summary_loss: 0.1939 - val_loss: 2.5580 - val_loss/inference_loss: 2.3881 - val_loss/summary_loss: 0.1699
 Epoch 32/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 550ms/step - loss: 2.2515 - loss/inference_loss: 2.0954 - loss/summary_loss: 0.1561 - val_loss: 2.3814 - val_loss/inference_loss: 2.2284 - val_loss/summary_loss: 0.1530
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 652ms/step - loss: 2.6621 - loss/inference_loss: 2.4773 - loss/summary_loss: 0.1847 - val_loss: 2.7204 - val_loss/inference_loss: 2.5579 - val_loss/summary_loss: 0.1626
 Epoch 33/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 541ms/step - loss: 2.1215 - loss/inference_loss: 1.9579 - loss/summary_loss: 0.1636 - val_loss: 2.0887 - val_loss/inference_loss: 1.9297 - val_loss/summary_loss: 0.1590
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 641ms/step - loss: 2.3376 - loss/inference_loss: 2.1612 - loss/summary_loss: 0.1764 - val_loss: 2.3137 - val_loss/inference_loss: 2.1466 - val_loss/summary_loss: 0.1671
 Epoch 34/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 540ms/step - loss: 2.1897 - loss/inference_loss: 2.0323 - loss/summary_loss: 0.1574 - val_loss: 2.4066 - val_loss/inference_loss: 2.2340 - val_loss/summary_loss: 0.1725
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 640ms/step - loss: 2.3064 - loss/inference_loss: 2.1392 - loss/summary_loss: 0.1671 - val_loss: 2.1724 - val_loss/inference_loss: 2.0077 - val_loss/summary_loss: 0.1647
 Epoch 35/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 12s 584ms/step - loss: 1.8850 - loss/inference_loss: 1.7289 - loss/summary_loss: 0.1561 - val_loss: 1.6007 - val_loss/inference_loss: 1.4405 - val_loss/summary_loss: 0.1602
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 638ms/step - loss: 2.6591 - loss/inference_loss: 2.4902 - loss/summary_loss: 0.1689 - val_loss: 2.8983 - val_loss/inference_loss: 2.7284 - val_loss/summary_loss: 0.1699
 Epoch 36/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 566ms/step - loss: 1.7409 - loss/inference_loss: 1.5707 - loss/summary_loss: 0.1701 - val_loss: 1.8780 - val_loss/inference_loss: 1.7130 - val_loss/summary_loss: 0.1650
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 644ms/step - loss: 2.2897 - loss/inference_loss: 2.0997 - loss/summary_loss: 0.1900 - val_loss: 2.1468 - val_loss/inference_loss: 1.9434 - val_loss/summary_loss: 0.2034
 Epoch 37/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 570ms/step - loss: 2.3168 - loss/inference_loss: 2.1430 - loss/summary_loss: 0.1738 - val_loss: 1.8696 - val_loss/inference_loss: 1.7035 - val_loss/summary_loss: 0.1660
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 672ms/step - loss: 2.3447 - loss/inference_loss: 2.1427 - loss/summary_loss: 0.2020 - val_loss: 2.2293 - val_loss/inference_loss: 2.0126 - val_loss/summary_loss: 0.2167
 Epoch 38/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 567ms/step - loss: 1.6114 - loss/inference_loss: 1.4466 - loss/summary_loss: 0.1649 - val_loss: 1.2581 - val_loss/inference_loss: 1.0754 - val_loss/summary_loss: 0.1827
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 650ms/step - loss: 2.1639 - loss/inference_loss: 1.9669 - loss/summary_loss: 0.1970 - val_loss: 2.2016 - val_loss/inference_loss: 2.0265 - val_loss/summary_loss: 0.1751
 Epoch 39/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 12s 580ms/step - loss: 1.5048 - loss/inference_loss: 1.3375 - loss/summary_loss: 0.1673 - val_loss: 1.6852 - val_loss/inference_loss: 1.5086 - val_loss/summary_loss: 0.1766
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 631ms/step - loss: 1.9992 - loss/inference_loss: 1.8057 - loss/summary_loss: 0.1936 - val_loss: 1.9904 - val_loss/inference_loss: 1.8133 - val_loss/summary_loss: 0.1771
 Epoch 40/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 568ms/step - loss: 1.3536 - loss/inference_loss: 1.1865 - loss/summary_loss: 0.1670 - val_loss: 1.7820 - val_loss/inference_loss: 1.6051 - val_loss/summary_loss: 0.1769
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 637ms/step - loss: 1.8934 - loss/inference_loss: 1.7005 - loss/summary_loss: 0.1929 - val_loss: 2.1794 - val_loss/inference_loss: 2.0040 - val_loss/summary_loss: 0.1755
 Epoch 41/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 12s 580ms/step - loss: 1.6882 - loss/inference_loss: 1.5211 - loss/summary_loss: 0.1671 - val_loss: 2.0654 - val_loss/inference_loss: 1.8773 - val_loss/summary_loss: 0.1880
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 638ms/step - loss: 1.8562 - loss/inference_loss: 1.6690 - loss/summary_loss: 0.1872 - val_loss: 1.9737 - val_loss/inference_loss: 1.7985 - val_loss/summary_loss: 0.1752
 Epoch 42/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 12s 597ms/step - loss: 1.4865 - loss/inference_loss: 1.2806 - loss/summary_loss: 0.2059 - val_loss: 1.4813 - val_loss/inference_loss: 1.2312 - val_loss/summary_loss: 0.2501
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 632ms/step - loss: 1.7466 - loss/inference_loss: 1.5612 - loss/summary_loss: 0.1854 - val_loss: 2.0639 - val_loss/inference_loss: 1.8752 - val_loss/summary_loss: 0.1887
 Epoch 43/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 567ms/step - loss: 1.2900 - loss/inference_loss: 1.0658 - loss/summary_loss: 0.2242 - val_loss: 1.0590 - val_loss/inference_loss: 0.8564 - val_loss/summary_loss: 0.2026
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 648ms/step - loss: 1.7693 - loss/inference_loss: 1.5840 - loss/summary_loss: 0.1853 - val_loss: 2.5070 - val_loss/inference_loss: 2.3081 - val_loss/summary_loss: 0.1989
 Epoch 44/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 549ms/step - loss: 1.0724 - loss/inference_loss: 0.8845 - loss/summary_loss: 0.1879 - val_loss: 1.6218 - val_loss/inference_loss: 1.4355 - val_loss/summary_loss: 0.1862
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 674ms/step - loss: 1.7723 - loss/inference_loss: 1.5713 - loss/summary_loss: 0.2011 - val_loss: 1.9744 - val_loss/inference_loss: 1.7753 - val_loss/summary_loss: 0.1991
 Epoch 45/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 12s 593ms/step - loss: 1.2824 - loss/inference_loss: 1.0915 - loss/summary_loss: 0.1908 - val_loss: 1.2253 - val_loss/inference_loss: 1.0222 - val_loss/summary_loss: 0.2031
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 634ms/step - loss: 1.6406 - loss/inference_loss: 1.4498 - loss/summary_loss: 0.1909 - val_loss: 1.7236 - val_loss/inference_loss: 1.5469 - val_loss/summary_loss: 0.1768
 Epoch 46/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 12s 580ms/step - loss: 1.0173 - loss/inference_loss: 0.8328 - loss/summary_loss: 0.1845 - val_loss: 1.2865 - val_loss/inference_loss: 1.0725 - val_loss/summary_loss: 0.2140
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 638ms/step - loss: 1.6229 - loss/inference_loss: 1.4347 - loss/summary_loss: 0.1882 - val_loss: 1.7695 - val_loss/inference_loss: 1.5858 - val_loss/summary_loss: 0.1838
 Epoch 47/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 565ms/step - loss: 1.1920 - loss/inference_loss: 1.0173 - loss/summary_loss: 0.1747 - val_loss: 0.6424 - val_loss/inference_loss: 0.4737 - val_loss/summary_loss: 0.1688
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 635ms/step - loss: 1.9651 - loss/inference_loss: 1.7786 - loss/summary_loss: 0.1865 - val_loss: 2.2095 - val_loss/inference_loss: 2.0418 - val_loss/summary_loss: 0.1676
 Epoch 48/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 546ms/step - loss: 0.9623 - loss/inference_loss: 0.7910 - loss/summary_loss: 0.1713 - val_loss: 0.9176 - val_loss/inference_loss: 0.7322 - val_loss/summary_loss: 0.1853
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 638ms/step - loss: 1.7954 - loss/inference_loss: 1.6079 - loss/summary_loss: 0.1875 - val_loss: 1.7250 - val_loss/inference_loss: 1.5349 - val_loss/summary_loss: 0.1901
 Epoch 49/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 543ms/step - loss: 0.8234 - loss/inference_loss: 0.6522 - loss/summary_loss: 0.1712 - val_loss: 0.5328 - val_loss/inference_loss: 0.3686 - val_loss/summary_loss: 0.1641
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 640ms/step - loss: 1.4650 - loss/inference_loss: 1.2654 - loss/summary_loss: 0.1996 - val_loss: 1.5375 - val_loss/inference_loss: 1.3673 - val_loss/summary_loss: 0.1703
 Epoch 50/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 540ms/step - loss: 0.7788 - loss/inference_loss: 0.6058 - loss/summary_loss: 0.1730 - val_loss: 1.4526 - val_loss/inference_loss: 1.2618 - val_loss/summary_loss: 0.1908
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 644ms/step - loss: 1.4561 - loss/inference_loss: 1.2723 - loss/summary_loss: 0.1838 - val_loss: 1.3710 - val_loss/inference_loss: 1.2069 - val_loss/summary_loss: 0.1641
 Epoch 51/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 542ms/step - loss: 1.0559 - loss/inference_loss: 0.8846 - loss/summary_loss: 0.1712 - val_loss: 1.0322 - val_loss/inference_loss: 0.8620 - val_loss/summary_loss: 0.1703
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 652ms/step - loss: 1.3965 - loss/inference_loss: 1.2208 - loss/summary_loss: 0.1757 - val_loss: 1.6446 - val_loss/inference_loss: 1.4805 - val_loss/summary_loss: 0.1641
 Epoch 52/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 541ms/step - loss: 0.9098 - loss/inference_loss: 0.7380 - loss/summary_loss: 0.1719 - val_loss: 0.6960 - val_loss/inference_loss: 0.5214 - val_loss/summary_loss: 0.1746
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 647ms/step - loss: 1.5803 - loss/inference_loss: 1.4120 - loss/summary_loss: 0.1683 - val_loss: 2.0261 - val_loss/inference_loss: 1.8793 - val_loss/summary_loss: 0.1468
 Epoch 53/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 549ms/step - loss: 0.7205 - loss/inference_loss: 0.5472 - loss/summary_loss: 0.1733 - val_loss: 0.6936 - val_loss/inference_loss: 0.5190 - val_loss/summary_loss: 0.1746
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 646ms/step - loss: 1.4886 - loss/inference_loss: 1.3165 - loss/summary_loss: 0.1721 - val_loss: 1.4217 - val_loss/inference_loss: 1.2650 - val_loss/summary_loss: 0.1567
 Epoch 54/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 542ms/step - loss: 0.5575 - loss/inference_loss: 0.3812 - loss/summary_loss: 0.1764 - val_loss: 0.2826 - val_loss/inference_loss: 0.1146 - val_loss/summary_loss: 0.1680
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 649ms/step - loss: 1.3557 - loss/inference_loss: 1.1763 - loss/summary_loss: 0.1794 - val_loss: 1.1852 - val_loss/inference_loss: 1.0335 - val_loss/summary_loss: 0.1517
 Epoch 55/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 541ms/step - loss: 0.5075 - loss/inference_loss: 0.3318 - loss/summary_loss: 0.1758 - val_loss: 0.4397 - val_loss/inference_loss: 0.2523 - val_loss/summary_loss: 0.1874
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 647ms/step - loss: 1.3222 - loss/inference_loss: 1.1358 - loss/summary_loss: 0.1863 - val_loss: 1.4570 - val_loss/inference_loss: 1.2818 - val_loss/summary_loss: 0.1752
 Epoch 56/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 547ms/step - loss: 0.5964 - loss/inference_loss: 0.4199 - loss/summary_loss: 0.1766 - val_loss: 0.5362 - val_loss/inference_loss: 0.3637 - val_loss/summary_loss: 0.1725
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 651ms/step - loss: 1.2665 - loss/inference_loss: 1.0845 - loss/summary_loss: 0.1819 - val_loss: 1.3704 - val_loss/inference_loss: 1.2134 - val_loss/summary_loss: 0.1570
 Epoch 57/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 547ms/step - loss: 0.9508 - loss/inference_loss: 0.7791 - loss/summary_loss: 0.1717 - val_loss: 0.6182 - val_loss/inference_loss: 0.4515 - val_loss/summary_loss: 0.1667
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 650ms/step - loss: 1.1603 - loss/inference_loss: 0.9831 - loss/summary_loss: 0.1771 - val_loss: 1.2693 - val_loss/inference_loss: 1.1043 - val_loss/summary_loss: 0.1650
 Epoch 58/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 542ms/step - loss: 0.5039 - loss/inference_loss: 0.3291 - loss/summary_loss: 0.1748 - val_loss: 0.2156 - val_loss/inference_loss: 0.0316 - val_loss/summary_loss: 0.1840
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 667ms/step - loss: 1.1930 - loss/inference_loss: 1.0246 - loss/summary_loss: 0.1684 - val_loss: 1.1312 - val_loss/inference_loss: 0.9607 - val_loss/summary_loss: 0.1705
 Epoch 59/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 542ms/step - loss: 0.6430 - loss/inference_loss: 0.4713 - loss/summary_loss: 0.1717 - val_loss: 0.4248 - val_loss/inference_loss: 0.2376 - val_loss/summary_loss: 0.1872
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 646ms/step - loss: 1.3012 - loss/inference_loss: 1.1337 - loss/summary_loss: 0.1675 - val_loss: 0.9646 - val_loss/inference_loss: 0.8219 - val_loss/summary_loss: 0.1427
 Epoch 60/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 542ms/step - loss: 0.4375 - loss/inference_loss: 0.2643 - loss/summary_loss: 0.1731 - val_loss: 0.5216 - val_loss/inference_loss: 0.3502 - val_loss/summary_loss: 0.1714
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 638ms/step - loss: 1.1655 - loss/inference_loss: 0.9962 - loss/summary_loss: 0.1692 - val_loss: 1.2670 - val_loss/inference_loss: 1.1023 - val_loss/summary_loss: 0.1647
 Epoch 61/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 554ms/step - loss: 0.5149 - loss/inference_loss: 0.3437 - loss/summary_loss: 0.1711 - val_loss: 0.6297 - val_loss/inference_loss: 0.4741 - val_loss/summary_loss: 0.1556
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 642ms/step - loss: 1.0884 - loss/inference_loss: 0.9162 - loss/summary_loss: 0.1722 - val_loss: 1.0760 - val_loss/inference_loss: 0.9093 - val_loss/summary_loss: 0.1666
 Epoch 62/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 550ms/step - loss: 0.3302 - loss/inference_loss: 0.1708 - loss/summary_loss: 0.1594 - val_loss: 0.3909 - val_loss/inference_loss: 0.2277 - val_loss/summary_loss: 0.1632
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 644ms/step - loss: 1.0608 - loss/inference_loss: 0.8926 - loss/summary_loss: 0.1682 - val_loss: 1.2358 - val_loss/inference_loss: 1.0848 - val_loss/summary_loss: 0.1510
 Epoch 63/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 546ms/step - loss: 0.3983 - loss/inference_loss: 0.2339 - loss/summary_loss: 0.1643 - val_loss: 0.5141 - val_loss/inference_loss: 0.3284 - val_loss/summary_loss: 0.1857
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 645ms/step - loss: 0.9816 - loss/inference_loss: 0.8134 - loss/summary_loss: 0.1682 - val_loss: 1.1988 - val_loss/inference_loss: 1.0484 - val_loss/summary_loss: 0.1503
 Epoch 64/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 549ms/step - loss: 0.2731 - loss/inference_loss: 0.1049 - loss/summary_loss: 0.1681 - val_loss: 0.1909 - val_loss/inference_loss: 0.0234 - val_loss/summary_loss: 0.1675
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 652ms/step - loss: 0.9914 - loss/inference_loss: 0.8276 - loss/summary_loss: 0.1638 - val_loss: 1.1647 - val_loss/inference_loss: 1.0099 - val_loss/summary_loss: 0.1549
 Epoch 65/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 546ms/step - loss: 0.2533 - loss/inference_loss: 0.0882 - loss/summary_loss: 0.1651 - val_loss: 0.3606 - val_loss/inference_loss: 0.1868 - val_loss/summary_loss: 0.1737
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 663ms/step - loss: 0.9703 - loss/inference_loss: 0.8106 - loss/summary_loss: 0.1597 - val_loss: 1.0473 - val_loss/inference_loss: 0.8970 - val_loss/summary_loss: 0.1503
 Epoch 66/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 544ms/step - loss: 0.2249 - loss/inference_loss: 0.0612 - loss/summary_loss: 0.1637 - val_loss: 0.6684 - val_loss/inference_loss: 0.5002 - val_loss/summary_loss: 0.1682
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 649ms/step - loss: 0.9324 - loss/inference_loss: 0.7728 - loss/summary_loss: 0.1596 - val_loss: 1.1476 - val_loss/inference_loss: 0.9971 - val_loss/summary_loss: 0.1505
 Epoch 67/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 544ms/step - loss: 0.2323 - loss/inference_loss: 0.0717 - loss/summary_loss: 0.1605 - val_loss: 0.2420 - val_loss/inference_loss: 0.0885 - val_loss/summary_loss: 0.1535
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 646ms/step - loss: 0.9491 - loss/inference_loss: 0.7905 - loss/summary_loss: 0.1585 - val_loss: 0.9906 - val_loss/inference_loss: 0.8568 - val_loss/summary_loss: 0.1338
 Epoch 68/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 545ms/step - loss: 0.1380 - loss/inference_loss: -0.0215 - loss/summary_loss: 0.1595 - val_loss: -0.1493 - val_loss/inference_loss: -0.3209 - val_loss/summary_loss: 0.1715
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 645ms/step - loss: 0.9203 - loss/inference_loss: 0.7623 - loss/summary_loss: 0.1580 - val_loss: 0.8555 - val_loss/inference_loss: 0.7052 - val_loss/summary_loss: 0.1503
 Epoch 69/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 547ms/step - loss: 0.1005 - loss/inference_loss: -0.0615 - loss/summary_loss: 0.1620 - val_loss: 0.2482 - val_loss/inference_loss: 0.0915 - val_loss/summary_loss: 0.1567
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 647ms/step - loss: 0.9002 - loss/inference_loss: 0.7434 - loss/summary_loss: 0.1567 - val_loss: 0.9529 - val_loss/inference_loss: 0.7949 - val_loss/summary_loss: 0.1580
 Epoch 70/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 553ms/step - loss: 0.1835 - loss/inference_loss: 0.0197 - loss/summary_loss: 0.1638 - val_loss: 0.4854 - val_loss/inference_loss: 0.3127 - val_loss/summary_loss: 0.1727
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 642ms/step - loss: 0.8696 - loss/inference_loss: 0.7143 - loss/summary_loss: 0.1553 - val_loss: 1.0420 - val_loss/inference_loss: 0.8976 - val_loss/summary_loss: 0.1444
 Epoch 71/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 547ms/step - loss: 0.1100 - loss/inference_loss: -0.0533 - loss/summary_loss: 0.1633 - val_loss: 0.2090 - val_loss/inference_loss: 0.0429 - val_loss/summary_loss: 0.1661
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 635ms/step - loss: 0.8365 - loss/inference_loss: 0.6796 - loss/summary_loss: 0.1569 - val_loss: 0.7756 - val_loss/inference_loss: 0.6244 - val_loss/summary_loss: 0.1512
 Epoch 72/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 560ms/step - loss: 0.0443 - loss/inference_loss: -0.1226 - loss/summary_loss: 0.1669 - val_loss: 0.1434 - val_loss/inference_loss: -0.0256 - val_loss/summary_loss: 0.1690
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 641ms/step - loss: 0.7884 - loss/inference_loss: 0.6326 - loss/summary_loss: 0.1558 - val_loss: 0.9432 - val_loss/inference_loss: 0.8026 - val_loss/summary_loss: 0.1406
 Epoch 73/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 554ms/step - loss: 0.0536 - loss/inference_loss: -0.1134 - loss/summary_loss: 0.1670 - val_loss: 0.1843 - val_loss/inference_loss: 0.0194 - val_loss/summary_loss: 0.1649
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 654ms/step - loss: 0.8110 - loss/inference_loss: 0.6554 - loss/summary_loss: 0.1556 - val_loss: 1.2307 - val_loss/inference_loss: 1.0674 - val_loss/summary_loss: 0.1633
 Epoch 74/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 545ms/step - loss: 0.0409 - loss/inference_loss: -0.1268 - loss/summary_loss: 0.1677 - val_loss: 0.1043 - val_loss/inference_loss: -0.0714 - val_loss/summary_loss: 0.1758
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 645ms/step - loss: 0.8237 - loss/inference_loss: 0.6710 - loss/summary_loss: 0.1527 - val_loss: 1.0769 - val_loss/inference_loss: 0.9334 - val_loss/summary_loss: 0.1435
 Epoch 75/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 547ms/step - loss: 0.0519 - loss/inference_loss: -0.1139 - loss/summary_loss: 0.1659 - val_loss: 0.2015 - val_loss/inference_loss: 0.0364 - val_loss/summary_loss: 0.1651
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 640ms/step - loss: 0.7520 - loss/inference_loss: 0.6001 - loss/summary_loss: 0.1519 - val_loss: 0.5952 - val_loss/inference_loss: 0.4440 - val_loss/summary_loss: 0.1512
 Epoch 76/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 550ms/step - loss: -9.3351e-04 - loss/inference_loss: -0.1657 - loss/summary_loss: 0.1648 - val_loss: 0.1912 - val_loss/inference_loss: -0.0046 - val_loss/summary_loss: 0.1958
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 638ms/step - loss: 0.7704 - loss/inference_loss: 0.6198 - loss/summary_loss: 0.1506 - val_loss: 1.0217 - val_loss/inference_loss: 0.8737 - val_loss/summary_loss: 0.1481
 Epoch 77/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 546ms/step - loss: -0.0163 - loss/inference_loss: -0.1815 - loss/summary_loss: 0.1652 - val_loss: 0.0029 - val_loss/inference_loss: -0.1616 - val_loss/summary_loss: 0.1646
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 633ms/step - loss: 0.8600 - loss/inference_loss: 0.7117 - loss/summary_loss: 0.1483 - val_loss: 0.8531 - val_loss/inference_loss: 0.7029 - val_loss/summary_loss: 0.1502
 Epoch 78/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 546ms/step - loss: -0.0676 - loss/inference_loss: -0.2336 - loss/summary_loss: 0.1660 - val_loss: 0.0314 - val_loss/inference_loss: -0.1420 - val_loss/summary_loss: 0.1734
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 646ms/step - loss: 0.7354 - loss/inference_loss: 0.5853 - loss/summary_loss: 0.1500 - val_loss: 0.8464 - val_loss/inference_loss: 0.6999 - val_loss/summary_loss: 0.1465
 Epoch 79/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 545ms/step - loss: -0.1293 - loss/inference_loss: -0.2922 - loss/summary_loss: 0.1628 - val_loss: -0.0265 - val_loss/inference_loss: -0.1853 - val_loss/summary_loss: 0.1588
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 656ms/step - loss: 0.6935 - loss/inference_loss: 0.5461 - loss/summary_loss: 0.1474 - val_loss: 1.1493 - val_loss/inference_loss: 1.0016 - val_loss/summary_loss: 0.1477
 Epoch 80/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 548ms/step - loss: -0.1306 - loss/inference_loss: -0.2919 - loss/summary_loss: 0.1613 - val_loss: -0.1537 - val_loss/inference_loss: -0.3320 - val_loss/summary_loss: 0.1783
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 640ms/step - loss: 0.6776 - loss/inference_loss: 0.5293 - loss/summary_loss: 0.1483 - val_loss: 0.8535 - val_loss/inference_loss: 0.7131 - val_loss/summary_loss: 0.1404
 Epoch 81/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 556ms/step - loss: -0.1184 - loss/inference_loss: -0.2816 - loss/summary_loss: 0.1632 - val_loss: -0.3627 - val_loss/inference_loss: -0.5255 - val_loss/summary_loss: 0.1629
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 641ms/step - loss: 0.6657 - loss/inference_loss: 0.5185 - loss/summary_loss: 0.1471 - val_loss: 0.6595 - val_loss/inference_loss: 0.5300 - val_loss/summary_loss: 0.1295
 Epoch 82/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 549ms/step - loss: -0.1359 - loss/inference_loss: -0.2981 - loss/summary_loss: 0.1621 - val_loss: 0.1000 - val_loss/inference_loss: -0.0440 - val_loss/summary_loss: 0.1440
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 655ms/step - loss: 0.6525 - loss/inference_loss: 0.5066 - loss/summary_loss: 0.1459 - val_loss: 0.8119 - val_loss/inference_loss: 0.6816 - val_loss/summary_loss: 0.1303
 Epoch 83/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 549ms/step - loss: -0.1611 - loss/inference_loss: -0.3231 - loss/summary_loss: 0.1620 - val_loss: -0.0432 - val_loss/inference_loss: -0.1958 - val_loss/summary_loss: 0.1526
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 652ms/step - loss: 0.6473 - loss/inference_loss: 0.5016 - loss/summary_loss: 0.1457 - val_loss: 1.1176 - val_loss/inference_loss: 0.9759 - val_loss/summary_loss: 0.1417
 Epoch 84/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 548ms/step - loss: -0.1888 - loss/inference_loss: -0.3505 - loss/summary_loss: 0.1617 - val_loss: 0.2523 - val_loss/inference_loss: 0.0854 - val_loss/summary_loss: 0.1670
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 651ms/step - loss: 0.6252 - loss/inference_loss: 0.4787 - loss/summary_loss: 0.1464 - val_loss: 0.9897 - val_loss/inference_loss: 0.8482 - val_loss/summary_loss: 0.1415
 Epoch 85/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 551ms/step - loss: -0.1954 - loss/inference_loss: -0.3547 - loss/summary_loss: 0.1593 - val_loss: -0.2561 - val_loss/inference_loss: -0.4276 - val_loss/summary_loss: 0.1715
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 648ms/step - loss: 0.6253 - loss/inference_loss: 0.4791 - loss/summary_loss: 0.1461 - val_loss: 0.9309 - val_loss/inference_loss: 0.7894 - val_loss/summary_loss: 0.1415
 Epoch 86/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 549ms/step - loss: -0.1764 - loss/inference_loss: -0.3366 - loss/summary_loss: 0.1602 - val_loss: -0.1960 - val_loss/inference_loss: -0.3549 - val_loss/summary_loss: 0.1589
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 653ms/step - loss: 0.6400 - loss/inference_loss: 0.4954 - loss/summary_loss: 0.1446 - val_loss: 0.7634 - val_loss/inference_loss: 0.6060 - val_loss/summary_loss: 0.1574
 Epoch 87/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 555ms/step - loss: -0.2151 - loss/inference_loss: -0.3746 - loss/summary_loss: 0.1594 - val_loss: -0.0779 - val_loss/inference_loss: -0.2426 - val_loss/summary_loss: 0.1647
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 634ms/step - loss: 0.6005 - loss/inference_loss: 0.4567 - loss/summary_loss: 0.1438 - val_loss: 0.9929 - val_loss/inference_loss: 0.8591 - val_loss/summary_loss: 0.1337
 Epoch 88/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 547ms/step - loss: -0.2131 - loss/inference_loss: -0.3725 - loss/summary_loss: 0.1594 - val_loss: -0.1772 - val_loss/inference_loss: -0.3338 - val_loss/summary_loss: 0.1566
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 644ms/step - loss: 0.5821 - loss/inference_loss: 0.4381 - loss/summary_loss: 0.1440 - val_loss: 0.7725 - val_loss/inference_loss: 0.6350 - val_loss/summary_loss: 0.1375
 Epoch 89/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 550ms/step - loss: -0.2434 - loss/inference_loss: -0.4029 - loss/summary_loss: 0.1595 - val_loss: -0.1916 - val_loss/inference_loss: -0.3591 - val_loss/summary_loss: 0.1674
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 656ms/step - loss: 0.5848 - loss/inference_loss: 0.4408 - loss/summary_loss: 0.1440 - val_loss: 0.7279 - val_loss/inference_loss: 0.5971 - val_loss/summary_loss: 0.1309
 Epoch 90/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 551ms/step - loss: -0.2553 - loss/inference_loss: -0.4132 - loss/summary_loss: 0.1579 - val_loss: -0.1315 - val_loss/inference_loss: -0.2902 - val_loss/summary_loss: 0.1587
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 654ms/step - loss: 0.5676 - loss/inference_loss: 0.4243 - loss/summary_loss: 0.1433 - val_loss: 0.4774 - val_loss/inference_loss: 0.3479 - val_loss/summary_loss: 0.1295
 Epoch 91/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 548ms/step - loss: -0.2574 - loss/inference_loss: -0.4158 - loss/summary_loss: 0.1584 - val_loss: 0.1010 - val_loss/inference_loss: -0.0772 - val_loss/summary_loss: 0.1782
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 650ms/step - loss: 0.5667 - loss/inference_loss: 0.4229 - loss/summary_loss: 0.1438 - val_loss: 0.8972 - val_loss/inference_loss: 0.7705 - val_loss/summary_loss: 0.1267
 Epoch 92/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 546ms/step - loss: -0.2710 - loss/inference_loss: -0.4296 - loss/summary_loss: 0.1586 - val_loss: -0.2252 - val_loss/inference_loss: -0.3775 - val_loss/summary_loss: 0.1523
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 644ms/step - loss: 0.5633 - loss/inference_loss: 0.4198 - loss/summary_loss: 0.1435 - val_loss: 0.5660 - val_loss/inference_loss: 0.4268 - val_loss/summary_loss: 0.1392
 Epoch 93/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 551ms/step - loss: -0.2747 - loss/inference_loss: -0.4330 - loss/summary_loss: 0.1583 - val_loss: -0.0979 - val_loss/inference_loss: -0.2547 - val_loss/summary_loss: 0.1568
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 651ms/step - loss: 0.5625 - loss/inference_loss: 0.4200 - loss/summary_loss: 0.1425 - val_loss: 0.8851 - val_loss/inference_loss: 0.7444 - val_loss/summary_loss: 0.1407
 Epoch 94/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 555ms/step - loss: -0.2738 - loss/inference_loss: -0.4320 - loss/summary_loss: 0.1582 - val_loss: -0.1712 - val_loss/inference_loss: -0.3199 - val_loss/summary_loss: 0.1487
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 653ms/step - loss: 0.5464 - loss/inference_loss: 0.4034 - loss/summary_loss: 0.1429 - val_loss: 0.7550 - val_loss/inference_loss: 0.6080 - val_loss/summary_loss: 0.1470
 Epoch 95/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 544ms/step - loss: -0.2758 - loss/inference_loss: -0.4329 - loss/summary_loss: 0.1571 - val_loss: 0.0891 - val_loss/inference_loss: -0.0787 - val_loss/summary_loss: 0.1678
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 659ms/step - loss: 0.5542 - loss/inference_loss: 0.4115 - loss/summary_loss: 0.1427 - val_loss: 1.0188 - val_loss/inference_loss: 0.8732 - val_loss/summary_loss: 0.1456
 Epoch 96/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 546ms/step - loss: -0.2836 - loss/inference_loss: -0.4420 - loss/summary_loss: 0.1584 - val_loss: -0.1718 - val_loss/inference_loss: -0.3436 - val_loss/summary_loss: 0.1718
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 651ms/step - loss: 0.5547 - loss/inference_loss: 0.4116 - loss/summary_loss: 0.1431 - val_loss: 0.7003 - val_loss/inference_loss: 0.5620 - val_loss/summary_loss: 0.1383
 Epoch 97/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 545ms/step - loss: -0.2792 - loss/inference_loss: -0.4364 - loss/summary_loss: 0.1572 - val_loss: -0.0414 - val_loss/inference_loss: -0.2135 - val_loss/summary_loss: 0.1721
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 650ms/step - loss: 0.5643 - loss/inference_loss: 0.4210 - loss/summary_loss: 0.1432 - val_loss: 0.5191 - val_loss/inference_loss: 0.3852 - val_loss/summary_loss: 0.1339
 Epoch 98/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 546ms/step - loss: -0.2923 - loss/inference_loss: -0.4494 - loss/summary_loss: 0.1571 - val_loss: 0.1190 - val_loss/inference_loss: -0.0561 - val_loss/summary_loss: 0.1751
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 633ms/step - loss: 0.5524 - loss/inference_loss: 0.4096 - loss/summary_loss: 0.1428 - val_loss: 0.7010 - val_loss/inference_loss: 0.5694 - val_loss/summary_loss: 0.1316
 Epoch 99/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 547ms/step - loss: -0.2900 - loss/inference_loss: -0.4485 - loss/summary_loss: 0.1585 - val_loss: -0.1284 - val_loss/inference_loss: -0.2807 - val_loss/summary_loss: 0.1523
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 640ms/step - loss: 0.5481 - loss/inference_loss: 0.4046 - loss/summary_loss: 0.1436 - val_loss: 0.8737 - val_loss/inference_loss: 0.7477 - val_loss/summary_loss: 0.1261
 Epoch 100/100
-20/20 ━━━━━━━━━━━━━━━━━━━━ 11s 545ms/step - loss: -0.2960 - loss/inference_loss: -0.4526 - loss/summary_loss: 0.1565 - val_loss: -0.2876 - val_loss/inference_loss: -0.4450 - val_loss/summary_loss: 0.1574</code></pre>
+20/20 ━━━━━━━━━━━━━━━━━━━━ 13s 637ms/step - loss: 0.5406 - loss/inference_loss: 0.3977 - loss/summary_loss: 0.1429 - val_loss: 0.6171 - val_loss/inference_loss: 0.4793 - val_loss/summary_loss: 0.1378</code></pre>
 </div>
 </div>
-<div id="cell-18" class="cell" data-execution_count="16">
+<div id="cell-19" class="cell" data-execution_count="16">
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>test_data <span class="op">=</span> simulator.sample(<span class="dv">1_000</span>)</span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>plots<span class="op">=</span>workflow.plot_default_diagnostics(test_data<span class="op">=</span>test_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
@@ -825,111 +838,122 @@ Epoch 100/100
 <section id="application-to-real-data" class="level3">
 <h3 class="anchored" data-anchor-id="application-to-real-data">Application to real data</h3>
 <p>Here we will work with data from Fortmann, et al.&nbsp;(2008), that is also included in the R package <code>EMC2</code> (Stevenson, Donzallaz, &amp; Heathcote, 2025). Here we use a slightly reshaped dataset where each combination of subject x condition is extended to a length of 350 trials (the missing trials are filled with 0s). This allows us to estimate the posterior for each subject in each condition with a single pass through the posterior approximator.</p>
-<div id="cell-20" class="cell" data-execution_count="17">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>data_inference <span class="op">=</span> pd.read_csv(<span class="st">"../data/forstmann.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-21" class="cell" data-execution_count="17">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>data_inference <span class="op">=</span> pd.read_csv(<span class="st">"forstmann.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-21" class="cell" data-execution_count="18">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>data_inference_grouped <span class="op">=</span> data_inference.groupby([<span class="st">"subject"</span>, <span class="st">"condition"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-22" class="cell" data-execution_count="18">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>data_inference[<span class="st">'condition'</span>].unique()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="18">
+<pre><code>array(['accuracy', 'speed', 'neutral'], dtype=object)</code></pre>
 </div>
-<div id="cell-22" class="cell" data-execution_count="19">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>data_inference_dict <span class="op">=</span> {</span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>    key: np.array([group[key].values.reshape(<span class="dv">350</span>, <span class="dv">1</span>) <span class="cf">for</span> _, group <span class="kw">in</span> data_inference_grouped]) </span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>             <span class="cf">for</span> key <span class="kw">in</span> [<span class="st">'rt'</span>, <span class="st">'response'</span>, <span class="st">'observed'</span>]}</span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>data_inference_dict[<span class="st">"n"</span>] <span class="op">=</span> np.<span class="bu">sum</span>(data_inference_dict[<span class="st">"observed"</span>], axis<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>({key: value.shape <span class="cf">for</span> key, value <span class="kw">in</span> data_inference_dict.items()})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-23" class="cell" data-execution_count="19">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>data_inference_grouped <span class="op">=</span> data_inference.groupby([<span class="st">"subject"</span>, <span class="st">"condition"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-24" class="cell" data-execution_count="20">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>data_inference_dict <span class="op">=</span> {</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>    key: np.array([group[key].values.reshape(<span class="dv">350</span>, <span class="dv">1</span>) <span class="cf">for</span> _, group <span class="kw">in</span> data_inference_grouped]) </span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>             <span class="cf">for</span> key <span class="kw">in</span> [<span class="st">'rt'</span>, <span class="st">'response'</span>, <span class="st">'observed'</span>]}</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>data_inference_dict[<span class="st">"n"</span>] <span class="op">=</span> np.<span class="bu">sum</span>(data_inference_dict[<span class="st">"observed"</span>], axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>({key: value.shape <span class="cf">for</span> key, value <span class="kw">in</span> data_inference_dict.items()})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>{'rt': (57, 350, 1), 'response': (57, 350, 1), 'observed': (57, 350, 1), 'n': (57, 1)}</code></pre>
 </div>
 </div>
-<div id="cell-23" class="cell" data-execution_count="20">
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>posterior_samples <span class="op">=</span> workflow.sample(conditions<span class="op">=</span>data_inference_dict, num_samples<span class="op">=</span><span class="dv">1_000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-25" class="cell" data-execution_count="21">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>posterior_samples <span class="op">=</span> workflow.sample(conditions<span class="op">=</span>data_inference_dict, num_samples<span class="op">=</span><span class="dv">1_000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-24" class="cell" data-execution_count="21">
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># pick the first participant, first condition</span></span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>posterior <span class="op">=</span> {key: value[<span class="dv">0</span>] <span class="cf">for</span> key, value <span class="kw">in</span> posterior_samples.items()}</span>
-<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> data_inference_grouped.get_group((<span class="st">'as1t'</span>, <span class="st">'accuracy'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-26" class="cell" data-execution_count="22">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># pick the first participant, first condition</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>posterior <span class="op">=</span> {key: value[<span class="dv">0</span>] <span class="cf">for</span> key, value <span class="kw">in</span> posterior_samples.items()}</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> data_inference_grouped.get_group((<span class="st">'as1t'</span>, <span class="st">'accuracy'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-25" class="cell" data-execution_count="30">
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>f<span class="op">=</span>bf.diagnostics.pairs_posterior(estimates<span class="op">=</span>posterior)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-27" class="cell" data-execution_count="23">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>f<span class="op">=</span>bf.diagnostics.pairs_posterior(estimates<span class="op">=</span>posterior)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="bayesflow-diffusion_files/figure-html/cell-23-output-1.png" class="img-fluid figure-img"></p>
+<p><img src="bayesflow-diffusion_files/figure-html/cell-24-output-1.png" class="img-fluid figure-img"></p>
 </figure>
 </div>
 </div>
 </div>
-<div id="cell-26" class="cell" data-execution_count="23">
-<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> ecdf(rt, response, observed, <span class="op">**</span>kwargs):</span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>    observed_mask <span class="op">=</span> (observed <span class="op">==</span> <span class="dv">1</span>)</span>
-<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>    response_0_mask <span class="op">=</span> ((response <span class="op">==</span> <span class="dv">0</span>) <span class="op">&amp;</span> observed_mask)</span>
-<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>    response_1_mask <span class="op">=</span> ((response <span class="op">==</span> <span class="dv">1</span>) <span class="op">&amp;</span> observed_mask)</span>
-<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>    response_0_prop <span class="op">=</span> np.<span class="bu">sum</span>(response_0_mask) <span class="op">/</span> np.<span class="bu">sum</span>(observed_mask)</span>
-<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>    response_1_prop <span class="op">=</span> np.<span class="bu">sum</span>(response_1_mask) <span class="op">/</span> np.<span class="bu">sum</span>(observed_mask)</span>
-<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>    response_0_ecdf <span class="op">=</span> stats.ecdf(rt[response_0_mask]).cdf</span>
-<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>    response_0_ecdf <span class="op">=</span> response_0_prop <span class="op">*</span> response_0_ecdf.evaluate(np.linspace(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">101</span>))</span>
-<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>    response_1_ecdf <span class="op">=</span> stats.ecdf(rt[response_1_mask]).cdf</span>
-<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a>    response_1_ecdf <span class="op">=</span> response_1_prop <span class="op">*</span> response_1_ecdf.evaluate(np.linspace(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">101</span>))</span>
-<span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> response_0_ecdf, response_1_ecdf</span>
-<span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a>    </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-28" class="cell" data-execution_count="24">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> ecdf(rt, response, observed, <span class="op">**</span>kwargs):</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>    observed_mask <span class="op">=</span> (observed <span class="op">==</span> <span class="dv">1</span>)</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>    response_0_mask <span class="op">=</span> ((response <span class="op">==</span> <span class="dv">0</span>) <span class="op">&amp;</span> observed_mask)</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>    response_1_mask <span class="op">=</span> ((response <span class="op">==</span> <span class="dv">1</span>) <span class="op">&amp;</span> observed_mask)</span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>    response_0_prop <span class="op">=</span> np.<span class="bu">sum</span>(response_0_mask) <span class="op">/</span> np.<span class="bu">sum</span>(observed_mask)</span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>    response_1_prop <span class="op">=</span> np.<span class="bu">sum</span>(response_1_mask) <span class="op">/</span> np.<span class="bu">sum</span>(observed_mask)</span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a>    response_0_ecdf <span class="op">=</span> stats.ecdf(rt[response_0_mask]).cdf</span>
+<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a>    response_0_ecdf <span class="op">=</span> response_0_prop <span class="op">*</span> response_0_ecdf.evaluate(np.linspace(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">101</span>))</span>
+<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a>    response_1_ecdf <span class="op">=</span> stats.ecdf(rt[response_1_mask]).cdf</span>
+<span id="cb31-13"><a href="#cb31-13" aria-hidden="true" tabindex="-1"></a>    response_1_ecdf <span class="op">=</span> response_1_prop <span class="op">*</span> response_1_ecdf.evaluate(np.linspace(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">101</span>))</span>
+<span id="cb31-14"><a href="#cb31-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-15"><a href="#cb31-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> response_0_ecdf, response_1_ecdf</span>
+<span id="cb31-16"><a href="#cb31-16" aria-hidden="true" tabindex="-1"></a>    </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-27" class="cell" data-execution_count="24">
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>plot_data <span class="op">=</span> ecdf(<span class="op">**</span>data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-29" class="cell" data-execution_count="25">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>plot_data <span class="op">=</span> ecdf(<span class="op">**</span>data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-28" class="cell" data-execution_count="25">
-<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>posterior_predictives <span class="op">=</span> simulator.sample(<span class="dv">1000</span>, <span class="op">**</span>posterior)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>/var/folders/vn/tvq3_rgx63795x08zmwtn_rr0000gn/T/ipykernel_15834/1207014727.py:44: DeprecationWarning: Conversion of an array with ndim &gt; 0 to a scalar is deprecated, and will error in future. Ensure you extract a single element from your array before performing this operation. (Deprecated NumPy 1.25.)
-  rt[i] = result[0]</code></pre>
+<div id="cell-30" class="cell" data-execution_count="26">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>posterior_predictives <span class="op">=</span> simulator.sample(<span class="dv">1000</span>, <span class="op">**</span>posterior)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<div id="cell-31" class="cell" data-execution_count="27">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>plot_data_predictive <span class="op">=</span> []</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1000</span>):</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> { key: value[i:i<span class="op">+</span><span class="dv">1</span>,...] <span class="cf">for</span> key, value <span class="kw">in</span> posterior_predictives.items()}</span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>    plot_data_predictive.append(ecdf(<span class="op">**</span>x))</span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>plot_data_predictive <span class="op">=</span> np.array(plot_data_predictive)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-29" class="cell" data-execution_count="26">
-<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>plot_data_predictive <span class="op">=</span> []</span>
-<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1000</span>):</span>
-<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> { key: value[i:i<span class="op">+</span><span class="dv">1</span>,...] <span class="cf">for</span> key, value <span class="kw">in</span> posterior_predictives.items()}</span>
-<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>    plot_data_predictive.append(ecdf(<span class="op">**</span>x))</span>
-<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>plot_data_predictive <span class="op">=</span> np.array(plot_data_predictive)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div id="cell-30" class="cell" data-execution_count="27">
-<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>plot_data_quantiles <span class="op">=</span> np.quantile(</span>
-<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>    plot_data_predictive, </span>
-<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>    q <span class="op">=</span> [<span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>],</span>
-<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>    axis<span class="op">=</span><span class="dv">0</span></span>
-<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>plot_data_quantiles.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="27">
+<div id="cell-32" class="cell" data-execution_count="28">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>plot_data_quantiles <span class="op">=</span> np.quantile(</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>    plot_data_predictive, </span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>    q <span class="op">=</span> [<span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>],</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>    axis<span class="op">=</span><span class="dv">0</span></span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>plot_data_quantiles.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="28">
 <pre><code>(3, 2, 101)</code></pre>
 </div>
 </div>
-<div id="cell-31" class="cell" data-execution_count="28">
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>t <span class="op">=</span> np.linspace(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">101</span>)</span>
-<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>cols <span class="op">=</span> [<span class="st">"red"</span>, <span class="st">"blue"</span>]</span>
-<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, lab <span class="kw">in</span> <span class="bu">enumerate</span>([<span class="st">"Incorrect"</span>, <span class="st">"Correct"</span>]):</span>
-<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>    plt.plot(t, plot_data[i], label<span class="op">=</span>lab, color<span class="op">=</span>cols[i])</span>
-<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>    plt.plot(t, plot_data_quantiles[<span class="dv">1</span>, i, :], color<span class="op">=</span>cols[i], alpha<span class="op">=</span><span class="fl">0.5</span>, label<span class="op">=</span><span class="st">"median predictive"</span>)</span>
-<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>    plt.fill_between(</span>
-<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>        t,</span>
-<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>        plot_data_quantiles[<span class="dv">0</span>,  i,:],</span>
-<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>        plot_data_quantiles[<span class="op">-</span><span class="dv">1</span>, i,:],</span>
-<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a>        label<span class="op">=</span><span class="st">"50% predictive interval"</span>,</span>
-<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a>        color<span class="op">=</span>cols[i],</span>
-<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a>        alpha<span class="op">=</span><span class="fl">0.3</span></span>
-<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a>f<span class="op">=</span>plt.legend()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-33" class="cell" data-execution_count="29">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>t <span class="op">=</span> np.linspace(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">101</span>)</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>cols <span class="op">=</span> [<span class="st">"red"</span>, <span class="st">"blue"</span>]</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, lab <span class="kw">in</span> <span class="bu">enumerate</span>([<span class="st">"Incorrect"</span>, <span class="st">"Correct"</span>]):</span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>    plt.plot(t, plot_data[i], label<span class="op">=</span>lab, color<span class="op">=</span>cols[i])</span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>    plt.plot(t, plot_data_quantiles[<span class="dv">1</span>, i, :], color<span class="op">=</span>cols[i], alpha<span class="op">=</span><span class="fl">0.5</span>, label<span class="op">=</span><span class="st">"median predictive"</span>)</span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>    plt.fill_between(</span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>        t,</span>
+<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a>        plot_data_quantiles[<span class="dv">0</span>,  i,:],</span>
+<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a>        plot_data_quantiles[<span class="op">-</span><span class="dv">1</span>, i,:],</span>
+<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a>        label<span class="op">=</span><span class="st">"50% predictive interval"</span>,</span>
+<span id="cb37-11"><a href="#cb37-11" aria-hidden="true" tabindex="-1"></a>        color<span class="op">=</span>cols[i],</span>
+<span id="cb37-12"><a href="#cb37-12" aria-hidden="true" tabindex="-1"></a>        alpha<span class="op">=</span><span class="fl">0.3</span></span>
+<span id="cb37-13"><a href="#cb37-13" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb37-14"><a href="#cb37-14" aria-hidden="true" tabindex="-1"></a>f<span class="op">=</span>plt.legend()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="bayesflow-diffusion_files/figure-html/cell-29-output-1.png" class="img-fluid figure-img"></p>
+<p><img src="bayesflow-diffusion_files/figure-html/cell-30-output-1.png" class="img-fluid figure-img"></p>
 </figure>
 </div>
 </div>
 </div>
 </section>
 </section>
+</section>
+<section id="further-exercises" class="level1">
+<h1>Further exercises</h1>
+<ol type="1">
+<li>The diagnostics show that there are some situations where we learn basically nothing from the data. Find out whether there is some common pattern between these simulations and whether you could fix this.</li>
+<li>Each participant in the experiment was exposed to three different conditions (speed, neutral, accuracy). Here we fitted a simple model to each condition separately. However, it would make much more sense to fit a single model that encompassess all three conditions. Think about which parameters of the decision making model should theoretically be affected by the experimental condition, and implement a model that quantifies these differences.</li>
+<li>The data we worked with here are recoded such that we only have correct vs incorrect responses. However, the actual data contain two columns, where the stimulus has values “left” vs “right” and the response as well, “left” or “right”. Think about how to reparametrize the model such that instead of having one accumulator for correct and one for incorrect responses, you would have one accumulator for “left” and one accumulator “right” – and how would you make sure that the model responds to changes in stimulus. Train a BayesFlow model based on data from such simulator.</li>
+<li>The function that simulates the evidence accumulation process (<code>evidence_accumulation</code>) generates a standard Wiener diffusion with drift. Look for alternative ways how you could represent this process and try to implement it in a statistical model (examples: linear accumulation, Ornstein-Uhlenbeck process, Levy flight, …).</li>
+</ol>
 <section id="references" class="level2">
 <h2 class="anchored" data-anchor-id="references">References</h2>
 <p>Anders, R., Alario, F., &amp; Van Maanen, L. (2016). The shifted Wald distribution for response time data analysis. <em>Psychological methods, 21</em>(3), 309.</p>
@@ -938,6 +962,7 @@ Epoch 100/100
 <p>Tillman, G., Van Zandt, T., &amp; Logan, G. D. (2020). Sequential sampling models without random between-trial variability: The racing diffusion model of speeded decision making. <em>Psychonomic Bulletin &amp; Review, 27</em>(5), 911-936.</p>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->

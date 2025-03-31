@@ -134,18 +134,8 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">On this page</h2>
-   
-  <ul>
-  <li><a href="#schedule" id="toc-schedule" class="nav-link active" data-scroll-target="#schedule">Schedule</a>
-  <ul class="collapse">
-  <li><a href="#wednesday" id="toc-wednesday" class="nav-link" data-scroll-target="#wednesday">Wednesday</a></li>
-  <li><a href="#thursday" id="toc-thursday" class="nav-link" data-scroll-target="#thursday">Thursday</a></li>
-  </ul></li>
-  </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/Kucharssim/bayesflow-seminar/edit/main/todo.md" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Kucharssim/bayesflow-seminar/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+        
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -153,66 +143,9 @@ ul.task-list li input[type="checkbox"] {
 
 
 
-<p>“4*1.5h per day” “send Francis some ideas for projects” “give Francis dates of arrival and departure” “do I need to be booked or can I book myself”</p>
-<section id="schedule" class="level2">
-<h2 class="anchored" data-anchor-id="schedule">Schedule</h2>
-<section id="wednesday" class="level3">
-<h3 class="anchored" data-anchor-id="wednesday">Wednesday</h3>
-<ul>
-<li>Morning session #1
-<ul>
-<li>Motivation</li>
-<li>Introduction into Deep Learning</li>
-<li>Practical:
-<ul>
-<li>Basic regression/classification with a multilayer perceptron</li>
-</ul></li>
-</ul></li>
-<li>Morning session #2
-<ul>
-<li>Special neural architectures (DeepSets, Recurrent Neural Networks, Transformers)</li>
-<li>Generative neural networks (Normalizing flows, Flow matching)</li>
-</ul></li>
-<li>Afternoon session #1
-<ul>
-<li>Practical:
-<ul>
-<li>Implement your own Deep Set</li>
-<li>Implement your own Affine Coupling Flow</li>
-</ul></li>
-</ul></li>
-<li>Afternooon session #2
-<ul>
-<li>Introduction into Amortized Bayesian Inference</li>
-<li>BayesFlow (training, inference)</li>
-</ul></li>
-</ul>
-</section>
-<section id="thursday" class="level3">
-<h3 class="anchored" data-anchor-id="thursday">Thursday</h3>
-<ul>
-<li>Morning session #1
-<ul>
-<li>Diagnostics of BayesFlow models</li>
-<li>Practical:
-<ul>
-<li>Simple parameter estimation</li>
-<li>Simple model comparison</li>
-<li>DDM/RDM/LBA example?</li>
-</ul></li>
-</ul></li>
-<li>Morning session #2
-<ul>
-<li>Practical:
-<ul>
-<li>Continue on the practicals from the previous session</li>
-</ul></li>
-</ul></li>
-</ul>
+<p>Frequently asked questions: - How to save and load a BayesFlow model - Using a workflow object - Using an approximator object - Difference between padding to have constant/shaped tensors vs batches that have different shapes (via <code>meta_fn</code>) - Implications for offline vs online training - Implications for backends - More complicated (nested) data structues - e.g., data consists of N exchangeable trials, each trial consists a time-series of length T - building a custom summary networks? reshaping data? - Example on how to deal with missing values in data - Clean up using mmd to check for distribution shift (current syntax is cumbersome) - Multilevel approximators - When/how to use GPUs</p>
 
 
-</section>
-</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -643,7 +576,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </div>   
     <div class="nav-footer-center">
       &nbsp;
-    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/Kucharssim/bayesflow-seminar/edit/main/todo.md" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Kucharssim/bayesflow-seminar/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="toc-actions"><ul><li><a href="https://github.com/Kucharssim/bayesflow-seminar/edit/main/todo.md" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Kucharssim/bayesflow-seminar/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
     <div class="nav-footer-right">
 <p>Generated with <a href="https://quarto.org/">quarto</a>.</p>
 </div>
